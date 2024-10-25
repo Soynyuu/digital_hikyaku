@@ -17,7 +17,16 @@ class _SignupScreenState extends State<SignupScreen> {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
+              Text(
+              'サインアップしてはじめる',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(height: 20), 
             TextField(
               decoration: InputDecoration(labelText: 'ユーザー名'),
             ),
