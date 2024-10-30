@@ -6,7 +6,7 @@ class DeliverScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Text('とどける', style: TextStyle(fontSize: 24)),
+      child: Text('手紙を書いてみよう', style: TextStyle(fontSize: 24)),
     );
   }
 }
