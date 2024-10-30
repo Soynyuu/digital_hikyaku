@@ -16,8 +16,9 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.yellow,
         scaffoldBackgroundColor: Color(0xFFCAFFD3), // 背景色を設定
       ),
-      initialRoute: '/login',
-      routes: {
+      
+      initialRoute: '/login',//最初に表示する画面を設定
+      routes: {//ルートの割り振り
         '/login': (context) => LoginScreen(),
         '/signup': (context) => SignupScreen(),
         '/': (context) => HomeScreen(),
