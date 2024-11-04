@@ -31,21 +31,57 @@ class _HomeScreenState extends State<HomeScreen> {
       body: _widgetOptions.elementAt(_selectedIndex),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
-        items: const <BottomNavigationBarItem>[
+        items: <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: Icon(Icons.edit),
+            icon: Image.asset(
+              'assets/icons/bottomnav-icons/kaku.png',
+              width: 24,
+              height: 24,
+            ),
+            activeIcon: Image.asset(
+              'assets/icons/bottomnav-icons/kaku-tap.png',
+              width: 24,
+              height: 24,
+            ),
             label: '書く',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.visibility),
+            icon: Image.asset(
+              'assets/icons/bottomnav-icons/miru.png',
+              width: 24,
+              height: 24,
+            ),
+            activeIcon: Image.asset(
+              'assets/icons/bottomnav-icons/miru_tap.png',
+              width: 24,
+              height: 24,
+            ),
             label: '見る',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.send),
+            icon: Image.asset(
+              'assets/icons/bottomnav-icons/todokeru.png',
+              width: 24,
+              height: 24,
+            ),
+            activeIcon: Image.asset(
+              'assets/icons/bottomnav-icons/todokeru-tap.png',
+              width: 24,
+              height: 24,
+            ),
             label: 'とどける',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.contacts),
+            icon: Image.asset(
+              'assets/icons/bottomnav-icons/jyuusyo.png',
+              width: 24,
+              height: 24,
+            ),
+            activeIcon: Image.asset(
+              'assets/icons/bottomnav-icons/jyuusyo_tap.png',
+              width: 24,
+              height: 24,
+            ),
             label: '住所録',
           ),
         ],

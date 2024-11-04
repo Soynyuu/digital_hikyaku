@@ -5,28 +5,27 @@ class WriteScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          InkWell(
-            onTap: () {
-              // ボタンがタップされたときの処理をここに書く
-            },
-            child: Ink(
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage('assets/images/tegami_kaitemiyou.png'),
-                  fit: BoxFit.cover,
-                ),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              width: 200, // 画像の幅を指定
-              height: 200, // 画像の高さを指定
-            ),
-          ),
-        ],
+    return Scaffold(
+      backgroundColor: Color(0xFFCAFFD3), // 背景色を設定
+      appBar: AppBar(
+        title: Text('書く'),
+        backgroundColor: Colors.teal, // AppBarの色を変更
       ),
-    );
+      body: Center(
+  child: InkWell(
+    onTap: () {
+      // ボタンがタップされたときの処理をここに書く
+    },
+    child: Padding(
+      padding: const EdgeInsets.all(20.0), // 定数に変更
+      child: Image.asset(
+        'assets/icons/new-write.png',
+        width: 200,
+        height: 200,
+      ),
+    ),
+  ),
+),
+    );  
   }
 }
