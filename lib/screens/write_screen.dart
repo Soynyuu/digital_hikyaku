@@ -7,10 +7,6 @@ class WriteScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Color(0xFFCAFFD3), // 背景色を設定
-      appBar: AppBar(
-        title: Text('書く'),
-        backgroundColor: Colors.teal, // AppBarの色を変更
-      ),
       body: Center(
   child: InkWell(
     onTap: () {
