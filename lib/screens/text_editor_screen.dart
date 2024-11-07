@@ -17,9 +17,6 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
     String message = _controller.text;
     if (message.isNotEmpty) {
       // ここに送信処理を追加
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('メッセージを送信しました。')),
-      );
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => LetterCloseScreen()),
@@ -65,14 +62,13 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
               child: Padding(
                 padding: const EdgeInsets.all(20.0), // コンテナ内の余白を設定
                 child: Container(
-                  decoration: BoxDecoration(
-                  ),
+                  decoration: BoxDecoration(),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       TextField(
                         controller: _controller,
-                        maxLines: 10,
+                        maxLines: 20,
                         decoration: InputDecoration(
                           hintText: 'ここに手紙の内容を書いてください',
                           filled: true,
@@ -81,8 +77,15 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
                       ),
                       SizedBox(height: 20),
                       ElevatedButton(
-                        onPressed: _sendLetter,
-                        child: Text('送信'),
+                        onPressed: () {
+                          _sendLetter();
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => LetterCloseScreen()),
+                          );
+                        },
+                        child: Text('書き終える'),
                       ),
                     ],
                   ),
