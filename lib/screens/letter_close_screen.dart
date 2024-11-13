@@ -1,8 +1,18 @@
-// ファイル名: letter_close_screen.dart
 import 'package:flutter/material.dart';
 import 'letter_toukan_screen.dart'; // 投函完了画面のインポート
 
 class LetterCloseScreen extends StatelessWidget {
+  final String recipientId;
+  final String recipientName;
+  final String content;
+
+  const LetterCloseScreen({
+    Key? key,
+    required this.recipientId,
+    required this.recipientName,
+    required this.content,
+  }) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -14,7 +24,13 @@ class LetterCloseScreen extends StatelessWidget {
           onTap: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => LetterToukanScreen()),
+              MaterialPageRoute(
+                builder: (context) => LetterToukanScreen(
+                  recipientId: recipientId,
+                  recipientName: recipientName,
+                  content: content,
+                ),
+              ),
             );
           },
           child: Image.asset(
