@@ -43,8 +43,7 @@ class _SignupScreenState extends State<SignupScreen> {
 
           // ホーム画面に遷移し、ナビゲーションスタックをクリア
           Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
-        } else {
-        }
+        } else {}
       } catch (e) {
         // エラーメッセージを表示
         ScaffoldMessenger.of(context).showSnackBar(
@@ -69,18 +68,17 @@ class _SignupScreenState extends State<SignupScreen> {
               Text(
                 'サインアップしてはじめる',
                 style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
+                  fontSize: 20,
                 ),
               ),
-              SizedBox(height: 20),
+              SizedBox(height: 40),
               // 名前入力フィールド
               TextFormField(
                 controller: _nameController,
-                decoration: InputDecoration(labelText: '名前'),
+                decoration: InputDecoration(labelText: 'ユーザー名'),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return '名前を入力してください';
+                    return 'ユーザー名を入力してください';
                   }
                   return null;
                 },
@@ -127,11 +125,20 @@ class _SignupScreenState extends State<SignupScreen> {
                   return null;
                 },
               ),
-              SizedBox(height: 20),
+              SizedBox(height: 40),
               // サインアップボタン
-              ElevatedButton(
-                onPressed: _signup,
-                child: Text('サインアップ'),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _signup,
+                  child: Text(
+                    'サインアップする',
+                    style: TextStyle(fontSize: 18),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(vertical: 16),
+                  ),
+                ),
               ),
             ],
           ),

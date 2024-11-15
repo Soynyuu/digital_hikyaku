@@ -56,7 +56,7 @@ class _ViewScreenState extends State<ViewScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('受信メッセージ'),
+        title: Text('受信メッセージ一覧'),
       ),
       body: Stack(
         children: [
@@ -89,15 +89,8 @@ class _ViewScreenState extends State<ViewScreen> {
                                 ),
                                 SizedBox(height: 10),
                                 Text(
-                                  '送信者: ${message['sender']['name']}',
+                                  '書いたユーザー: ${message['sender']['name']}',
                                   style: TextStyle(color: Colors.grey[600]),
-                                ),
-                                Align(
-                                  alignment: Alignment.bottomRight,
-                                  child: Text(
-                                    message['created_at'],
-                                    style: TextStyle(color: Colors.grey[600]),
-                                  ),
                                 ),
                               ],
                             ),
