@@ -42,14 +42,32 @@ class _ViewScreenState extends State<ViewScreen> {
           DateTime.parse(createdAtStr).add(Duration(hours: 9)); // JSTに変換
       final now = DateTime.now();
 
-      // 時間差を計算（分単位）
-      final difference = now.difference(createdAt).inMinutes;
+      // 時間差を計算（時間単位）
+      final difference = now.difference(createdAt).inHours;
 
-      // 0分以下の場合は false（お届け中）、1分以上経過している場合は true（表示）
-      return difference > 0; // >= から > に変更
+      // 24時間（1日）以上経過している場合にtrueを返す
+      return difference >= 24;
     } catch (e) {
-      print('Date parsing error: $e');
       return false;
+    }
+  }
+
+  String _getDeliveryMessage(String createdAtStr) {
+    try {
+      final createdAt =
+          DateTime.parse(createdAtStr).add(Duration(hours: 9)); // JSTに変換
+      final now = DateTime.now();
+      final difference = now.difference(createdAt).inHours;
+      final remainingHours = 24 - difference;
+
+      if (remainingHours <= 0) {
+        return ''; // 配信可能な場合は空文字を返す（メッセージ本文が表示される）
+      } else {
+        final deliveryTime = createdAt.add(Duration(hours: 24));
+        return 'メッセージが届きました！\n${deliveryTime.year}年${deliveryTime.month}月${deliveryTime.day}日 ${deliveryTime.hour}時${deliveryTime.minute}分に確認できるようになります。\n(あと${remainingHours.ceil()}時間)';
+      }
+    } catch (e) {
+      return 'メッセージの配信予定時刻を計算できません';
     }
   }
 
@@ -59,7 +77,6 @@ class _ViewScreenState extends State<ViewScreen> {
       return '${dateTime.year}/${dateTime.month.toString().padLeft(2, '0')}/${dateTime.day.toString().padLeft(2, '0')} '
           '${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}:${dateTime.second.toString().padLeft(2, '0')}';
     } catch (e) {
-      print('Date formatting error: $e');
       return dateTimeStr;
     }
   }
@@ -68,19 +85,14 @@ class _ViewScreenState extends State<ViewScreen> {
     final now = DateTime.now();
     final dateTime =
         DateTime.parse(createdAt.toString()).add(Duration(hours: 9));
-    final difference = now.difference(dateTime).inMinutes;
+    final difference = now.difference(dateTime).inHours;
 
-    print("現在時刻: $now");
-    print("作成時刻: $dateTime");
-    print("差分(分): $difference");
-
-    if (difference == 0) {
-      return 'たった今';
-    } else if (difference < 60) {
-      return '$difference分前';
+    if (difference < 24) {
+      final remainingHours = 24 - difference;
+      return 'あと${remainingHours}時間';
     } else {
-      final hours = (difference / 60).floor();
-      return '$hours時間前';
+      final days = (difference / 24).floor();
+      return '$days日前';
     }
   }
 
@@ -148,6 +160,8 @@ class _ViewScreenState extends State<ViewScreen> {
                         final createdAt = DateTime.parse(message['created_at']);
                         final isDeliverable =
                             _isMessageDeliverable(message['created_at']);
+                        final deliveryMessage =
+                            _getDeliveryMessage(message['created_at']);
 
                         return Card(
                           margin: const EdgeInsets.symmetric(
@@ -158,7 +172,9 @@ class _ViewScreenState extends State<ViewScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  isDeliverable ? message['content'] : 'お届け中です',
+                                  isDeliverable
+                                      ? message['content']
+                                      : deliveryMessage,
                                   style: const TextStyle(fontSize: 16),
                                 ),
                                 const SizedBox(height: 10),

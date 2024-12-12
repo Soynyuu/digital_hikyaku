@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'write_screen.dart';
-import 'view_screen.dart';
-import 'deliver_screen.dart';
+import 'view_screen.dart' as received;
+import 'deliver_screen.dart' as deliver;
 import 'address_book_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -14,8 +14,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   static const List<Widget> _widgetOptions = <Widget>[
     WriteScreen(),
-    ViewScreen(),
-    DeliverScreen(),
+    received.ViewScreen(),
+    deliver.DeliverScreen(),
     AddressBookScreen(),
   ];
 
