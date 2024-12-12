@@ -13,10 +13,12 @@ class ViewScreen extends StatefulWidget {
 
 class _ViewScreenState extends State<ViewScreen> {
   final SupabaseClient _supabase = Supabase.instance.client;
-  List<dynamic> _messages = [];
+  List<Map<String, dynamic>> _messages = [];
   bool _isLoading = true;
   Timer? _timer;
-  DateTime? _serverTimeOffset;
+  int _currentPage = 0;
+  static const int _itemsPerPage = 10;
+  bool _hasMorePages = true;
 
   @override
   void initState() {
@@ -38,62 +40,82 @@ class _ViewScreenState extends State<ViewScreen> {
 
   bool _isMessageDeliverable(String createdAtStr) {
     try {
-      final createdAt =
-          DateTime.parse(createdAtStr).add(Duration(hours: 9)); // JSTに変換
+      final createdAt = DateTime.parse(createdAtStr).add(Duration(hours: 9));
       final now = DateTime.now();
-
-      // 時間差を計算（時間単位）
-      final difference = now.difference(createdAt).inHours;
-
-      // 24時間（1日）以上経過している場合にtrueを返す
-      return difference >= 24;
+      final deliveryTime = createdAt.add(Duration(hours: 24));
+      return now.isAfter(deliveryTime);
     } catch (e) {
       return false;
     }
   }
 
-  String _getDeliveryMessage(String createdAtStr) {
+  bool _isDeliveryDay(String createdAtStr) {
     try {
-      final createdAt =
-          DateTime.parse(createdAtStr).add(Duration(hours: 9)); // JSTに変換
+      final createdAt = DateTime.parse(createdAtStr).add(Duration(hours: 9));
       final now = DateTime.now();
-      final difference = now.difference(createdAt).inHours;
-      final remainingHours = 24 - difference;
+      final nextDay = createdAt.add(Duration(days: 1));
 
-      if (remainingHours <= 0) {
-        return ''; // 配信可能な場合は空文字を返す（メッセージ本文が表示される）
-      } else {
-        final deliveryTime = createdAt.add(Duration(hours: 24));
-        return 'メッセージが届きました！\n${deliveryTime.year}年${deliveryTime.month}月${deliveryTime.day}日 ${deliveryTime.hour}時${deliveryTime.minute}分に確認できるようになります。\n(あと${remainingHours.ceil()}時間)';
-      }
+      return now.year == nextDay.year &&
+          now.month == nextDay.month &&
+          now.day == nextDay.day &&
+          now.hour >= 9;
     } catch (e) {
-      return 'メッセージの配信予定時刻を計算できません';
+      return false;
     }
   }
 
-  String _formatDateTime(String dateTimeStr) {
+  String _formatDate(String dateTimeStr) {
     try {
       final dateTime = DateTime.parse(dateTimeStr).add(Duration(hours: 9));
-      return '${dateTime.year}/${dateTime.month.toString().padLeft(2, '0')}/${dateTime.day.toString().padLeft(2, '0')} '
-          '${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}:${dateTime.second.toString().padLeft(2, '0')}';
+      return '${dateTime.month}月${dateTime.day}日';
     } catch (e) {
-      return dateTimeStr;
+      return '';
     }
   }
 
-  String _formatTimeDifference(DateTime createdAt) {
-    final now = DateTime.now();
-    final dateTime =
-        DateTime.parse(createdAt.toString()).add(Duration(hours: 9));
-    final difference = now.difference(dateTime).inHours;
-
-    if (difference < 24) {
-      final remainingHours = 24 - difference;
-      return 'あと${remainingHours}時間';
-    } else {
-      final days = (difference / 24).floor();
-      return '$days日前';
-    }
+  void _showMessageContent(BuildContext context, Map<String, dynamic> message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.7,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  '${message['sender']['name']}より',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 20),
+                Flexible(
+                  child: SingleChildScrollView(
+                    child: Text(
+                      message['content'],
+                      style: TextStyle(fontSize: 16),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 20),
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text('閉じる'),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   Future<void> _fetchMessages() async {
@@ -114,11 +136,42 @@ class _ViewScreenState extends State<ViewScreen> {
           .select(
               'sender_id, content, created_at, sender:users!letters_sender_id_fkey(name)')
           .eq('recipient_id', userId)
-          .order('created_at', ascending: false);
+          .order('created_at', ascending: false)
+          .range(_currentPage * _itemsPerPage,
+              (_currentPage + 1) * _itemsPerPage - 1);
+
+      // テスト用のサンプルデータを作成
+      // final now = DateTime.now();
+      // final yesterday = now.subtract(Duration(days: 1));
+
+      // final sampleMessages = [
+      //   {
+      //     'sender_id': 'sample1',
+      //     'content': 'これは昨日朝9時に送信されたテストメッセージです',
+      //     'created_at':
+      //         DateTime(yesterday.year, yesterday.month, yesterday.day, 0, 0)
+      //             .toIso8601String(),
+      //     'sender': {'name': 'テストユーザー1'}
+      //   },
+      //   {
+      //     'sender_id': 'sample2',
+      //     'content': 'これは昨日夜21時に送信されたテストメッセージです',
+      //     'created_at':
+      //         DateTime(yesterday.year, yesterday.month, yesterday.day, 14, 0)
+      //             .toIso8601String(),
+      //     'sender': {'name': 'テストユーザー2'}
+      //   }
+      // ];
 
       if (mounted) {
         setState(() {
-          _messages = response;
+          if (_currentPage == 0) {
+            // _messages = [...sampleMessages, ...response];
+            _messages = [...response];
+          } else {
+            _messages.addAll(response);
+          }
+          _hasMorePages = response.length == _itemsPerPage;
           _isLoading = false;
         });
       }
@@ -135,8 +188,28 @@ class _ViewScreenState extends State<ViewScreen> {
     }
   }
 
+  List<Map<String, dynamic>> _getFilteredMessages() {
+    return _messages.where((message) {
+      final isDeliverable = _isMessageDeliverable(message['created_at']);
+      final isDeliveryDay = _isDeliveryDay(message['created_at']);
+      return isDeliverable || isDeliveryDay;
+    }).toList();
+  }
+
+  void _loadMoreMessages() {
+    if (!_isLoading && _hasMorePages) {
+      setState(() {
+        _currentPage++;
+        _isLoading = true;
+      });
+      _fetchMessages();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final filteredMessages = _getFilteredMessages();
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('受信メッセージ'),
@@ -149,59 +222,98 @@ class _ViewScreenState extends State<ViewScreen> {
             height: double.infinity,
             fit: BoxFit.cover,
           ),
-          _isLoading
+          _isLoading && _currentPage == 0
               ? const Center(child: CircularProgressIndicator())
-              : _messages.isEmpty
+              : filteredMessages.isEmpty
                   ? const Center(child: Text('メッセージがありません。'))
                   : ListView.builder(
-                      itemCount: _messages.length,
+                      itemCount:
+                          filteredMessages.length + (_hasMorePages ? 1 : 0),
                       itemBuilder: (context, index) {
-                        final message = _messages[index];
-                        final createdAt = DateTime.parse(message['created_at']);
+                        if (index == filteredMessages.length) {
+                          if (_isLoading) {
+                            return Center(
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: CircularProgressIndicator(),
+                              ),
+                            );
+                          }
+                          return Center(
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: TextButton(
+                                onPressed: _loadMoreMessages,
+                                child: Text('次の10件を表示'),
+                              ),
+                            ),
+                          );
+                        }
+
+                        final message = filteredMessages[index];
                         final isDeliverable =
                             _isMessageDeliverable(message['created_at']);
-                        final deliveryMessage =
-                            _getDeliveryMessage(message['created_at']);
+                        final isDeliveryDay =
+                            _isDeliveryDay(message['created_at']);
 
+                        if (!isDeliverable && !isDeliveryDay) {
+                          return SizedBox.shrink();
+                        }
+
+                        if (isDeliveryDay && !isDeliverable) {
+                          return Card(
+                            margin: const EdgeInsets.symmetric(
+                                vertical: 10, horizontal: 20),
+                            child: Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Center(
+                                child: Text(
+                                  'メッセージ配達中です。今日中に届きます。',
+                                  style: TextStyle(fontSize: 16),
+                                ),
+                              ),
+                            ),
+                          );
+                        }
+
+                        // 24時間経過したメッセージ
                         return Card(
                           margin: const EdgeInsets.symmetric(
                               vertical: 10, horizontal: 20),
-                          child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  isDeliverable
-                                      ? message['content']
-                                      : deliveryMessage,
-                                  style: const TextStyle(fontSize: 16),
-                                ),
-                                const SizedBox(height: 10),
-                                Text(
-                                  '送信者: ${message['sender']['name']}',
-                                  style: TextStyle(color: Colors.grey[600]),
-                                ),
-                                Align(
-                                  alignment: Alignment.bottomRight,
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: [
-                                      Text(
-                                        _formatDateTime(message['created_at']),
-                                        style:
-                                            TextStyle(color: Colors.grey[600]),
-                                      ),
-                                      Text(
-                                        _formatTimeDifference(createdAt),
-                                        style: TextStyle(
-                                            color: Colors.grey[400],
-                                            fontSize: 12),
-                                      ),
-                                    ],
+                          child: InkWell(
+                            onTap: () => _showMessageContent(context, message),
+                            child: Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          '${message['sender']['name']} さんから届きました。',
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            color: Colors.grey[800],
+                                          ),
+                                        ),
+                                        SizedBox(height: 4),
+                                        Text(
+                                          '送信日: ${_formatDate(message['created_at'])}',
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color: Colors.grey[600],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                ),
-                              ],
+                                  Icon(Icons.mail_outline),
+                                ],
+                              ),
                             ),
                           ),
                         );
