@@ -3,7 +3,7 @@ import 'package:timezone/timezone.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/auth/signup_screen.dart';
 import 'screens/home_screen.dart';
-import 'secure_storage.dart';
+import 'shared_preferences_storage.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 Future<void> main() async {
