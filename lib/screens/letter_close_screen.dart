@@ -17,7 +17,7 @@ class LetterCloseScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('書き終えた'),
+        title: Text('手紙に封をする'),
       ),
       body: Center(
         child: GestureDetector(

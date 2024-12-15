@@ -22,7 +22,7 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('${widget.recipientName} への手紙'),
+        title: Text('${widget.recipientName} に送る手紙'),
       ),
       body: Stack(
         children: [
@@ -44,7 +44,7 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
                     maxLines: null,
                     expands: true,
                     decoration: InputDecoration(
-                      hintText: 'ここに手紙の内容を書いてください',
+                      hintText: '例えば、クリスマスカードを書いてみましょう。',
                       filled: true,
                       fillColor: Colors.white.withOpacity(0.0), // 背景を半透明に
                     ),
@@ -64,7 +64,7 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
                       ),
                     );
                   },
-                  child: Text('手紙に封をする'),
+                  child: Text('手紙を封筒に入れる'),
                 ),
               ],
             ),

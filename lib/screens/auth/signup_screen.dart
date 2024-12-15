@@ -43,8 +43,7 @@ class _SignupScreenState extends State<SignupScreen> {
 
           // ホーム画面に遷移し、ナビゲーションスタックをクリア
           Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
-        } else {
-        }
+        } else {}
       } catch (e) {
         // エラーメッセージを表示
         ScaffoldMessenger.of(context).showSnackBar(
@@ -77,10 +76,10 @@ class _SignupScreenState extends State<SignupScreen> {
               // 名前入力フィールド
               TextFormField(
                 controller: _nameController,
-                decoration: InputDecoration(labelText: '名前'),
+                decoration: InputDecoration(labelText: 'ユーザー名'),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return '名前を入力してください';
+                    return 'ユーザー名を入力してください';
                   }
                   return null;
                 },
