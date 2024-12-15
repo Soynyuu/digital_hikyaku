@@ -38,13 +38,16 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
             padding: const EdgeInsets.all(16.0),
             child: Column(
               children: [
-                TextField(
-                  controller: _controller,
-                  maxLines: 20,
-                  decoration: InputDecoration(
-                    hintText: 'ここに手紙の内容を書いてください',
-                    filled: true,
-                    fillColor: Colors.white.withOpacity(0.0), // 背景を半透明に
+                Expanded(
+                  child: TextField(
+                    controller: _controller,
+                    maxLines: null,
+                    expands: true,
+                    decoration: InputDecoration(
+                      hintText: 'ここに手紙の内容を書いてください',
+                      filled: true,
+                      fillColor: Colors.white.withOpacity(0.0), // 背景を半透明に
+                    ),
                   ),
                 ),
                 SizedBox(height: 20),
@@ -61,7 +64,7 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
                       ),
                     );
                   },
-                  child: Text('書き終える'),
+                  child: Text('手紙に封をする'),
                 ),
               ],
             ),
