@@ -11,16 +11,17 @@ class AddressBookScreen extends StatefulWidget {
 class _AddressBookScreenState extends State<AddressBookScreen> {
   final SupabaseClient _supabase = Supabase.instance.client;
   List<dynamic> _addressBook = [];
+  Map<String, dynamic>? _currentUser;
 
   @override
   void initState() {
     super.initState();
+    _fetchCurrentUser();
     _fetchAddressBook();
   }
 
-  Future<void> _fetchAddressBook() async {
+  Future<void> _fetchCurrentUser() async {
     final userId = _supabase.auth.currentUser?.id;
-
     if (userId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('ログインが必要です。')),
@@ -30,27 +31,109 @@ class _AddressBookScreenState extends State<AddressBookScreen> {
 
     try {
       final response = await _supabase
+          .from('users')
+          .select('id, name, email')
+          .eq('id', userId)
+          .single();
+
+      setState(() {
+        _currentUser = response;
+      });
+    } catch (error) {
+      print('Error fetching current user: $error');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('プロフィール情報の取得に失敗しました。')),
+      );
+    }
+  }
+
+  Future<void> _fetchAddressBook() async {
+    final userId = _supabase.auth.currentUser?.id;
+    if (userId == null) return;
+
+    try {
+      final response = await _supabase
           .from('user_connections')
           .select(
               'connected_user_id, connected_user:users!user_connections_connected_user_id_fkey(name, email)')
           .eq('user_id', userId);
 
-      print('Response: $response'); // デバッグ用にレスポンスを出力
-
       setState(() {
         _addressBook = response;
       });
     } catch (error) {
-      print('Error: $error'); // デバッグ用にエラーを出力
+      print('Error: $error');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('アドレス帳の取得に失敗しました。')),
       );
     }
   }
 
+  Future<void> _updateProfile() async {
+    if (_currentUser == null) return;
+
+    final nameController = TextEditingController(text: _currentUser!['name']);
+    final emailController = TextEditingController(text: _currentUser!['email']);
+
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('プロフィール編集'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: nameController,
+              decoration: InputDecoration(
+                labelText: '名前',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            SizedBox(height: 16),
+            TextField(
+              controller: emailController,
+              decoration: InputDecoration(
+                labelText: 'メールアドレス',
+                border: OutlineInputBorder(),
+              ),
+              keyboardType: TextInputType.emailAddress,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('キャンセル'),
+          ),
+          TextButton(
+            onPressed: () async {
+              try {
+                await _supabase.from('users').update({
+                  'name': nameController.text,
+                  'email': emailController.text,
+                }).eq('id', _currentUser!['id']);
+
+                Navigator.pop(context);
+                _fetchCurrentUser();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('プロフィールを更新しました')),
+                );
+              } catch (error) {
+                print('Error updating profile: $error');
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('プロフィールの更新に失敗しました')),
+                );
+              }
+            },
+            child: Text('保存'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _removeUserFromAddressBook(String connectedUserId) async {
     final userId = _supabase.auth.currentUser?.id;
-
     if (userId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('ログインが必要です。')),
@@ -69,7 +152,7 @@ class _AddressBookScreenState extends State<AddressBookScreen> {
       );
       _fetchAddressBook();
     } catch (error) {
-      print('Error: $error'); // デバッグ用にエラーを出力
+      print('Error: $error');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('アドレス帳からの削除に失敗しました。')),
       );
@@ -82,30 +165,71 @@ class _AddressBookScreenState extends State<AddressBookScreen> {
       appBar: AppBar(
         title: Text('住所録'),
       ),
-      body: _addressBook.isEmpty
-          ? Center(child: Text('アドレス帳にユーザーがいません。追加してください。'))
-          : ListView.builder(
-              itemCount: _addressBook.length,
-              itemBuilder: (context, index) {
-                final connectedUser = _addressBook[index]['connected_user'];
-                return ListTile(
-                  title: Text(connectedUser['name']),
-                  subtitle: Text(connectedUser['email']),
-                  trailing: IconButton(
-                    icon: Icon(Icons.delete, color: Colors.red),
-                    onPressed: () => _removeUserFromAddressBook(
-                        _addressBook[index]['connected_user_id']),
+      body: Column(
+        children: [
+          if (_currentUser != null)
+            ListTile(
+              leading: CircleAvatar(
+                backgroundColor: Theme.of(context).primaryColor,
+                child: Text(_currentUser!['name'][0].toUpperCase(),
+                    style: TextStyle(color: Colors.white)),
+              ),
+              title: Row(
+                children: [
+                  Text(
+                    _currentUser!['name'],
+                    style: TextStyle(fontWeight: FontWeight.bold),
                   ),
-                );
-              },
+                  SizedBox(width: 8),
+                  Text(
+                    '(自分)',
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+              subtitle: Text(_currentUser!['email']),
+              trailing: IconButton(
+                icon: Icon(Icons.edit),
+                onPressed: _updateProfile,
+                tooltip: 'プロフィール編集',
+              ),
             ),
+          Divider(height: 1),
+          Expanded(
+            child: _addressBook.isEmpty
+                ? Center(child: Text('アドレス帳にユーザーがいません。追加してください。'))
+                : ListView.builder(
+                    itemCount: _addressBook.length,
+                    itemBuilder: (context, index) {
+                      final connectedUser =
+                          _addressBook[index]['connected_user'];
+                      return ListTile(
+                        leading: CircleAvatar(
+                          child: Text(connectedUser['name'][0].toUpperCase()),
+                        ),
+                        title: Text(connectedUser['name']),
+                        subtitle: Text(connectedUser['email']),
+                        trailing: IconButton(
+                          icon: Icon(Icons.delete, color: Colors.red),
+                          onPressed: () => _removeUserFromAddressBook(
+                              _addressBook[index]['connected_user_id']),
+                        ),
+                      );
+                    },
+                  ),
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => AddContactScreen()),
           ).then((_) {
-            _fetchAddressBook(); // 追加後にアドレス帳を再取得
+            _fetchAddressBook();
           });
         },
         child: Icon(Icons.add),
@@ -159,7 +283,7 @@ class _AddContactScreenState extends State<AddContactScreen> {
         _isLoading = false;
       });
     } catch (error) {
-      print('Error: $error'); // デバッグ用にエラーを出力
+      print('Error: $error');
       setState(() {
         _isLoading = false;
       });
@@ -188,9 +312,9 @@ class _AddContactScreenState extends State<AddContactScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('アドレス帳に追加しました。')),
       );
-      Navigator.pop(context); // 追加後に前の画面に戻る
+      Navigator.pop(context);
     } catch (error) {
-      print('Error: $error'); // デバッグ用にエラーを出力
+      print('Error: $error');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('アドレス帳への追加に失敗しました。')),
       );
@@ -200,47 +324,50 @@ class _AddContactScreenState extends State<AddContactScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text('ユーザーを追加'),
-        ),
-        body: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              // 検索バー
-              TextField(
-                controller: _searchController,
-                decoration: InputDecoration(
-                  labelText: 'ユーザーを検索',
-                  prefixIcon: Icon(Icons.search),
-                  border: OutlineInputBorder(),
-                ),
-                onSubmitted: _searchUsers,
+      appBar: AppBar(
+        title: Text('ユーザーを追加'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                labelText: 'ユーザーを検索',
+                prefixIcon: Icon(Icons.search),
+                border: OutlineInputBorder(),
               ),
-              SizedBox(height: 20),
-              _isLoading
-                  ? CircularProgressIndicator()
-                  : Expanded(
-                      child: _searchResults.isEmpty
-                          ? Center(child: Text('検索結果がありません。'))
-                          : ListView.builder(
-                              itemCount: _searchResults.length,
-                              itemBuilder: (context, index) {
-                                final user = _searchResults[index];
-                                return ListTile(
-                                  title: Text(user['name']),
-                                  subtitle: Text(user['email']),
-                                  trailing: IconButton(
-                                    icon: Icon(Icons.person_add),
-                                    onPressed: () =>
-                                        _addUserToAddressBook(user['id']),
-                                  ),
-                                );
-                              },
-                            ),
-                    ),
-            ],
-          ),
-        ));
+              onSubmitted: _searchUsers,
+            ),
+            SizedBox(height: 20),
+            _isLoading
+                ? CircularProgressIndicator()
+                : Expanded(
+                    child: _searchResults.isEmpty
+                        ? Center(child: Text('検索結果がありません。'))
+                        : ListView.builder(
+                            itemCount: _searchResults.length,
+                            itemBuilder: (context, index) {
+                              final user = _searchResults[index];
+                              return ListTile(
+                                leading: CircleAvatar(
+                                  child: Text(user['name'][0].toUpperCase()),
+                                ),
+                                title: Text(user['name']),
+                                subtitle: Text(user['email']),
+                                trailing: IconButton(
+                                  icon: Icon(Icons.person_add),
+                                  onPressed: () =>
+                                      _addUserToAddressBook(user['id']),
+                                ),
+                              );
+                            },
+                          ),
+                  ),
+          ],
+        ),
+      ),
+    );
   }
 }
