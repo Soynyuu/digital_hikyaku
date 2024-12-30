@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'screens/home.dart';
+import 'screens/bottombar.dart';
 
 void main() {
   runApp(MyApp());
@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
             fit: BoxFit.cover,
           ),
         ),
-        child: HomeScreen(),
+        child: BottomBar(),
       ),
     );
   }

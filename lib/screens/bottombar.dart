@@ -1,28 +1,25 @@
 import 'package:flutter/material.dart';
+import 'contacts/contacts.dart';
+import 'home/home.dart';
+import 'letter_read/read_top.dart';
+import 'letter_write/write_top.dart';
+import 'walk_history/walk.dart';
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+class BottomBar extends StatefulWidget {
+  const BottomBar({Key? key}) : super(key: key);
   @override
-  _HomeScreenState createState() => _HomeScreenState();
+  _BottomBarState createState() => _BottomBarState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _BottomBarState extends State<BottomBar> {
   int _selectedIndex = 0;
 
-  static const List<Widget> _widgetOptions = <Widget>[
-    Text(
-      'HOME',
-    ),
-    Text(
-      'みる',
-    ),
-    Text(
-      'かく',
-    ),
-    Text(
-      '歩いた距離',
-    ),
-    Text('住所録'),
+  static List<Widget> _widgetOptions = <Widget>[
+    HomeScreen(),
+    LetterReadScreen(),
+    LetterWriteScreen(),
+    WalkHistoryScreen(),
+    ContactsScreen(),
   ];
 
   void _onItemTapped(int index) {
@@ -47,7 +44,6 @@ class _HomeScreenState extends State<HomeScreen> {
           BottomNavigationBarItem(
             icon: Icon(Icons.local_post_office),
             label: '見る',
-            
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.history_edu),
