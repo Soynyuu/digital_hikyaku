@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class ContactsScreen extends StatelessWidget {
-  const ContactsScreen({Key? key}) : super(key: key);
+  const ContactsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

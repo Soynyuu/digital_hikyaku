@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class LetterWriteScreen extends StatelessWidget {
-  const LetterWriteScreen({Key? key}) : super(key: key);
+  const LetterWriteScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
