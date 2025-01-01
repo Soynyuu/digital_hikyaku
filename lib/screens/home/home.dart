@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
-
+// フォントはsawarabiMincho
   @override
   Widget build(BuildContext context) {
     return Center(
