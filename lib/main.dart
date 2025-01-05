@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'screens/bottombar.dart';
+import 'screens/login.dart';
 
 void main() {
   runApp(MyApp());
@@ -15,15 +15,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.brown,
         scaffoldBackgroundColor: Colors.transparent,
       ),
-      home: Container(
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/background.png'),
-            fit: BoxFit.cover,
-          ),
-        ),
-        child: BottomBar(),
-      ),
+      home: const LoginScreen(),
     );
   }
 }
