@@ -1,64 +1,75 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
-import 'bottombar.dart';
-import 'dart:convert';
 import '../widgets/background_scaffold.dart';
-import 'registar.dart'; // 追加: 登録画面をインポート
+import 'login.dart';
+import 'bottombar.dart'; // 追加: BottomBarをインポート
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class RegisterScreen extends StatefulWidget {
+  const RegisterScreen({super.key});
 
   @override
-  _LoginScreenState createState() => _LoginScreenState();
+  _RegisterScreenState createState() => _RegisterScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _RegisterScreenState extends State<RegisterScreen> {
   final ApiService _apiService = ApiService();
   final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _displayNameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   String? _errorMessage;
   bool _isLoading = false;
 
-  void _login() async {
+  void _register() async {
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
 
-    final response = await _apiService.login(
+    final response = await _apiService.register(
       _nameController.text,
+      _displayNameController.text,
       _passwordController.text,
     );
+
+    if (response.statusCode == 200) {
+      // 登録成功後にログイン処理を実行
+      final loginResponse = await _apiService.login(
+        _nameController.text,
+        _passwordController.text,
+      );
+
+      if (loginResponse.statusCode == 200) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const BottomBar()),
+        );
+      } else {
+        final body = jsonDecode(loginResponse.body);
+        setState(() {
+          _errorMessage = body['error'] ?? 'ログインに失敗しました';
+        });
+      }
+    } else {
+      final body = jsonDecode(response.body);
+      setState(() {
+        _errorMessage = body['error'] ?? '登録に失敗しました';
+      });
+    }
 
     setState(() {
       _isLoading = false;
     });
-
-    if (response.statusCode == 200) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const BottomBar()),
-      );
-    } else {
-      final body = jsonDecode(response.body);
-      setState(() {
-        _errorMessage = body['error'] ?? 'ログインに失敗しました';
-      });
-    }
   }
 
   @override
   Widget build(BuildContext context) {
     return BackgroundScaffold(
       appBar: AppBar(
-        title: const Text('ログイン'),
-        backgroundColor: Colors.transparent, // 変更なし
-        elevation: 0, // 変更なし
-        iconTheme: IconThemeData(color: Colors.white), // 追加: アイコンの色を白に設定
-        titleTextStyle:
-            TextStyle(color: Colors.white, fontSize: 20), // 追加: タイトルのテキスト色を白に設定
+        title: const Text('アカウント登録'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
       ),
-      // ...existing code...
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -66,7 +77,11 @@ class _LoginScreenState extends State<LoginScreen> {
             children: [
               TextField(
                 controller: _nameController,
-                decoration: const InputDecoration(labelText: 'ユーザ名'),
+                decoration: const InputDecoration(labelText: 'ユーザー名'),
+              ),
+              TextField(
+                controller: _displayNameController,
+                decoration: const InputDecoration(labelText: '表示名'),
               ),
               TextField(
                 controller: _passwordController,
@@ -80,27 +95,17 @@ class _LoginScreenState extends State<LoginScreen> {
                   style: const TextStyle(color: Colors.red),
                 ),
               ElevatedButton(
-                onPressed: _isLoading ? null : _login,
+                onPressed: _isLoading ? null : _register,
                 child: _isLoading
                     ? const CircularProgressIndicator(
                         valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                       )
-                    : const Text('ログイン'),
-              ),
-              TextButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const RegisterScreen()),
-                  );
-                },
-                child: const Text('アカウントをお持ちでない方はこちら'),
+                    : const Text('登録'),
               ),
             ],
           ),
         ),
       ),
-// ...existing code...
     );
   }
 }

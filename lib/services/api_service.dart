@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  final String baseUrl = 'http://192.168.1.26:1080/api'; // サーバーのIPアドレスに置き換えてください
+  final String baseUrl = 'http://192.168.1.26:1080/api'; // サーバーのアドレス
 
   Future<http.Response> register(
       String name, String displayName, String password) async {
