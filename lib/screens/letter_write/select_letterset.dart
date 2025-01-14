@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../widgets/background_scaffold.dart';
 import 'package:google_fonts/google_fonts.dart';
-
+import 'edit_letter.dart';
 class SelectLettersetScreen extends StatefulWidget {
   const SelectLettersetScreen({super.key});
 
@@ -106,7 +106,14 @@ class _SelectLettersetScreenState extends State<SelectLettersetScreen> {
               child: ElevatedButton(
                 onPressed: selectedLetterSet != null
                     ? () {
-                        // 手紙を書く画面に遷移する処理をここに追加
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => EditLetterScreen(
+                              backgroundImage: selectedLetterSet!,
+                            ),
+                          ),
+                        );
                       }
                     : null,
                 child: Text(
