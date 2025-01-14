@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../widgets/background_scaffold.dart';
-import 'login.dart';
 import 'bottombar.dart'; // 追加: BottomBarをインポート
 
 class RegisterScreen extends StatefulWidget {
