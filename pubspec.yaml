@@ -43,6 +43,8 @@ flutter:
     - assets/letter_set/letter_set_1.jpeg
     - assets/letter_set/letter_set_2.jpeg
     - assets/letter_set/letter_set_3.png
+    - assets/icons/close_letter.png
+    - assets/icons/letter.png
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
 
