@@ -17,7 +17,7 @@ class BackgroundScaffold extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.transparent, // 追加
       extendBody: true, // 追加
-      extendBodyBehindAppBar: true, // 追加
+      extendBodyBehindAppBar: true, // 修正: trueからfalseに変更
       appBar: appBar != null
           ? AppBar(
               backgroundColor: Colors.transparent, // 追加

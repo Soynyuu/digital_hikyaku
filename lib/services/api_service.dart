@@ -113,4 +113,15 @@ class ApiService {
     );
     return response;
   }
+
+  Future<http.Response> getContacts() async {
+    final url = Uri.parse('$baseUrl/contacts');
+    final response = await http.get(
+      url,
+      headers: {'Content-Type': 'application/json'},
+    );
+    return response;
+  }
 }
+
+

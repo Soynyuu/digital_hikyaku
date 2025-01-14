@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart'; // 追加: GoogleFontsパッケージをインポート
 import '../services/api_service.dart';
 import 'bottombar.dart';
 import 'dart:convert';
@@ -55,8 +56,8 @@ class _LoginScreenState extends State<LoginScreen> {
         backgroundColor: Colors.transparent, // 変更なし
         elevation: 0, // 変更なし
         iconTheme: IconThemeData(color: Colors.white), // 追加: アイコンの色を白に設定
-        titleTextStyle:
-            TextStyle(color: Colors.white, fontSize: 20), // 追加: タイトルのテキスト色を白に設定
+        titleTextStyle: GoogleFonts.sawarabiMincho(
+            color: Colors.white, fontSize: 20), // 変更: GoogleFonts.sawarabiMinchoを使用
       ),
       // ...existing code...
       body: SafeArea(
