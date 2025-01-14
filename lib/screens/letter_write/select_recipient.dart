@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../services/api_service.dart'
 
 class SelectRecipientScreen extends StatelessWidget {
   const SelectRecipientScreen({super.key});
@@ -55,7 +56,6 @@ class SelectRecipientScreen extends StatelessWidget {
               );
             }).toList(),
             onChanged: (value) {
-              // 選択変更時の処理
             },
           ),
         ),
