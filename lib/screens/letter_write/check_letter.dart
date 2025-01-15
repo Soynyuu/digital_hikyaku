@@ -2,6 +2,8 @@ import 'package:digital_hikyaku/widgets/background_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../widgets/background_scaffold.dart';
+import 'sealed_letter.dart'; // 追加: SealedLetterScreenをインポート
+
 class CheckLetterScreen extends StatelessWidget {
   final String backgroundImage;
   final String letterText;
@@ -35,7 +37,8 @@ class CheckLetterScreen extends StatelessWidget {
             ),
           ),
           // 手紙の内容の表示
-          Center(
+          Align(
+            alignment: Alignment.centerLeft,
             child: Padding(
               padding: const EdgeInsets.all(16.0),
               child: Text(
@@ -56,11 +59,12 @@ class CheckLetterScreen extends StatelessWidget {
             right: 16,
             child: ElevatedButton(
               onPressed: () {
-                // 封を完了する処理をここに追加（例: サーバーに送信、保存など）
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('手紙を封しました')),
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const SealedLetterScreen(),
+                  ),
                 );
-                Navigator.popUntil(context, (route) => route.isFirst);
               },
               child: Text('封を完了する'),
             ),

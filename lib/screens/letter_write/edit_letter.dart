@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'check_letter.dart'; // 追加: プレビュー画面をインポート
+import 'check_letter.dart';// 追加: プレビュー画面をインポート
 
 class EditLetterScreen extends StatefulWidget { // 修正: StatelessWidgetからStatefulWidgetへ変更
   final String backgroundImage;
@@ -65,7 +65,7 @@ class _EditLetterScreenState extends State<EditLetterScreen> {
                       ),
                     );
                   },
-                  child: Text('プレビュー'),
+                  child: Text('筆を置く'),
                 ),
               ],
             ),
