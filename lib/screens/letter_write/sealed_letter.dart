@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'post_letter.dart'; // 追加: PostLetterScreenをインポート
 import '../../widgets/background_scaffold.dart';
 
 class SealedLetterScreen extends StatelessWidget {
@@ -24,20 +25,23 @@ class SealedLetterScreen extends StatelessWidget {
               children: [
                 GestureDetector(
                   onTap: () {
-                    Navigator.popUntil(context, (route) => route.isFirst);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const PostLetterScreen()),
+                    );
                   },
                   child: Image.asset(
-                    'assets/icons/close_letter.png',
+                    'assets/icons/letter.png', // 変更: 画像パスをletter.pngに変更
                     width: 400,
                     height: 400,
                   ),
                 ),
                 Center( // 変更: PositionedからCenterに変更
                   child: Text(
-                    'テキストをここに',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
+                    '封を閉じるには\n手紙をタップ',
+                    style: GoogleFonts.sawarabiMincho(
+                      color: Color(0xFF542E00),
+                      fontSize: 20,
                     ),
                   ),
                 ),

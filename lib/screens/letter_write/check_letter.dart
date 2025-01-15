@@ -1,7 +1,6 @@
 import 'package:digital_hikyaku/widgets/background_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../widgets/background_scaffold.dart';
 import 'sealed_letter.dart'; // 追加: SealedLetterScreenをインポート
 
 class CheckLetterScreen extends StatelessWidget {
@@ -66,7 +65,7 @@ class CheckLetterScreen extends StatelessWidget {
                   ),
                 );
               },
-              child: Text('封を完了する'),
+              child: Text('封を閉じる'),
             ),
           ),
         ],
