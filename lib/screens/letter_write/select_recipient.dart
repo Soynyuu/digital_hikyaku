@@ -17,10 +17,11 @@ class _SelectRecipientScreenState extends State<SelectRecipientScreen> {
   Widget build(BuildContext context) {
     return BackgroundScaffold(
       appBar: AppBar(
+        centerTitle: true,
         title: Text(
           '宛先を選ぶ',
           style: GoogleFonts.sawarabiMincho(
-            color: Colors.brown,
+            color: Color(0xff3C2100),
             fontSize: 24,
           ),
         ),

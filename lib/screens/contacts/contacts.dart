@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../services/api_service.dart';
 
 class ContactsScreen extends StatefulWidget {
@@ -48,7 +49,11 @@ class _ContactsScreenState extends State<ContactsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Contacts'),
+        title: Text(
+          '住所録',
+          style: GoogleFonts.sawarabiMincho(),
+        ),
+        backgroundColor: Colors.transparent,
       ),
       body: Column(
         children: [

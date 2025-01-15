@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:digital_hikyaku/screens/letter_write/select_recipient.dart';
+import 'select_recipient.dart';
 
 class LetterWriteScreen extends StatelessWidget {
   const LetterWriteScreen({super.key});

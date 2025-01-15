@@ -23,6 +23,7 @@ class BackgroundScaffold extends StatelessWidget {
               backgroundColor: Colors.transparent, // 追加
               elevation: 0, // 追加
               title: appBar!.title,
+              centerTitle: true,
               // 必要に応じて他のAppBarプロパティも設定
             )
           : null,

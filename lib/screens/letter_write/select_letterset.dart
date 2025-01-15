@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../widgets/background_scaffold.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'edit_letter.dart';
+
 class SelectLettersetScreen extends StatefulWidget {
   const SelectLettersetScreen({super.key});
 
@@ -37,7 +38,7 @@ class _SelectLettersetScreenState extends State<SelectLettersetScreen> {
         title: Text(
           'レターセットを選択',
           style: GoogleFonts.sawarabiMincho(
-            color: Colors.brown,
+            color: Color(0xff3C2100),
             fontSize: 24,
           ),
         ),
