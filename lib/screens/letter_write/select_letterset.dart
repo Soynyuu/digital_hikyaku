@@ -13,12 +13,12 @@ class SelectLettersetScreen extends StatefulWidget {
 class _SelectLettersetScreenState extends State<SelectLettersetScreen> {
   final List<Map<String, String>> letterSets = [
     {
-      'image': 'assets/letter_set/letter_set_1.jpeg',
+      'image': 'assets/letter_set/letter_set_1.png',
       'title': 'デザイン1',
       'description': 'デザイン1の説明文',
     },
     {
-      'image': 'assets/letter_set/letter_set_2.jpeg',
+      'image': 'assets/letter_set/letter_set_2.png',
       'title': 'デザイン2',
       'description': 'デザイン2の説明文',
     },
