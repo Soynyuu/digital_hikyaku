@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'contacts/contacts.dart';
 import 'home/home.dart';
-import 'letter_read/read_top.dart';
 import 'letter_write/write_top.dart';
 import 'walk_history/walk.dart';
 import '../widgets/background_scaffold.dart';
+import 'letter_read/received_letters.dart'; // 追加: 受信手紙一覧画面をインポート
 
 class BottomBar extends StatefulWidget {
   const BottomBar({super.key});
@@ -18,7 +18,7 @@ class _BottomBarState extends State<BottomBar> {
 
   static List<Widget> _widgetOptions = <Widget>[
     HomeScreen(),
-    LetterReadScreen(),
+    ReceivedLettersScreen(), // 修正: 受信手紙一覧画面を追加
     LetterWriteScreen(),
     WalkHistoryScreen(),
     ContactsScreen(),

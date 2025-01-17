@@ -26,24 +26,32 @@ class _LoginScreenState extends State<LoginScreen> {
       _errorMessage = null;
     });
 
-    final response = await _apiService.login(
-      _nameController.text,
-      _passwordController.text,
-    );
-
-    setState(() {
-      _isLoading = false;
-    });
-
-    if (response.statusCode == 200) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const BottomBar()),
+    try {
+      final response = await _apiService.login(
+        _nameController.text,
+        _passwordController.text,
       );
-    } else {
-      final body = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        if (!mounted) return;
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const BottomBar()),
+        );
+      } else {
+        final body = jsonDecode(response.body);
+        setState(() {
+          _errorMessage = body['error'] ?? 'ログインに失敗しました';
+        });
+      }
+    } catch (e) {
       setState(() {
-        _errorMessage = body['error'] ?? 'ログインに失敗しました';
+        _errorMessage = '通信エラー: $e';
+      });
+      debugPrint('Login error: $e');
+    } finally {
+      setState(() {
+        _isLoading = false;
       });
     }
   }

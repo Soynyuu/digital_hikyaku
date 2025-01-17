@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'screens/login.dart';
 
 void main() {
+  // デバッグモードでHTTPSの証明書エラーを無視
+  if (kDebugMode) {
+    WidgetsFlutterBinding.ensureInitialized();
+  }
+  
   runApp(MyApp());
 }
 

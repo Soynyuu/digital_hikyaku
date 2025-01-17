@@ -1,14 +1,16 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  final String baseUrl = 'http://192.168.1.26:1080/api'; // サーバーのアドレス
+  // ベースURLをlocalhostに変更
+  static const String baseUrl = 'http://10.0.2.2:1080/api';
+  // static const String baseUrl = 'http://127.0.0.1:1080/api';  // alternativeのURL
 
   Future<http.Response> register(
       String name, String displayName, String password) async {
-    final url = Uri.parse('$baseUrl/register');
-    final response = await http.post(
-      url,
+    return await http.post(
+      Uri.parse('$baseUrl/register'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'name': name,
@@ -16,20 +18,30 @@ class ApiService {
         'password': password,
       }),
     );
-    return response;
   }
 
   Future<http.Response> login(String name, String password) async {
-    final url = Uri.parse('$baseUrl/login');
-    final response = await http.post(
-      url,
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'name': name,
-        'password': password,
-      }),
-    );
-    return response;
+    try {
+      debugPrint('Attempting login for user: $name');
+      debugPrint('Login URL: ${Uri.parse('$baseUrl/login')}');
+      
+      final response = await http.post(
+        Uri.parse('$baseUrl/login'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'name': name,
+          'password': password,
+        }),
+      );
+
+      debugPrint('Login response status: ${response.statusCode}');
+      debugPrint('Login response body: ${response.body}');
+
+      return response;
+    } catch (e) {
+      debugPrint('Login error: $e');
+      rethrow;
+    }
   }
 
   Future<http.Response> logout() async {
@@ -94,24 +106,17 @@ class ApiService {
   }
 
   Future<http.Response> getReceiveHistory() async {
-    final url = Uri.parse('$baseUrl/letter/receive_history');
-    final response = await http.get(
-      url,
-      headers: {'Content-Type': 'application/json'},
-    );
-    return response;
+    return await http.get(Uri.parse('$baseUrl/letter/receive_history'));
   }
 
   Future<http.Response> readLetter(String letterId) async {
-    final url = Uri.parse('$baseUrl/letter/read');
-    final response = await http.post(
-      url,
+    return await http.post(
+      Uri.parse('$baseUrl/letter/read'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'letter_id': letterId,
       }),
     );
-    return response;
   }
 
   Future<http.Response> getContacts() async {
