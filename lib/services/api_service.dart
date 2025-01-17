@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
   // ベースURLをlocalhostに変更
@@ -22,9 +23,6 @@ class ApiService {
 
   Future<http.Response> login(String name, String password) async {
     try {
-      debugPrint('Attempting login for user: $name');
-      debugPrint('Login URL: ${Uri.parse('$baseUrl/login')}');
-      
       final response = await http.post(
         Uri.parse('$baseUrl/login'),
         headers: {'Content-Type': 'application/json'},
@@ -34,8 +32,11 @@ class ApiService {
         }),
       );
 
-      debugPrint('Login response status: ${response.statusCode}');
-      debugPrint('Login response body: ${response.body}');
+      if (response.statusCode == 200) {
+        final prefs = await SharedPreferences.getInstance();
+        final sessionId = response.headers['set-cookie'];
+        await prefs.setString('session_id', sessionId ?? '');
+      }
 
       return response;
     } catch (e) {
@@ -45,37 +46,62 @@ class ApiService {
   }
 
   Future<http.Response> logout() async {
-    final url = Uri.parse('$baseUrl/logout');
+    final prefs = await SharedPreferences.getInstance();
+    final sessionId = prefs.getString('session_id') ?? '';
+
     final response = await http.post(
-      url,
-      headers: {'Content-Type': 'application/json'},
+      Uri.parse('$baseUrl/logout'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Cookie': sessionId,
+      },
     );
+
+    await prefs.remove('session_id');
     return response;
   }
 
   Future<http.Response> getUserInfo() async {
-    final url = Uri.parse('$baseUrl/me');
+    final prefs = await SharedPreferences.getInstance();
+    final sessionId = prefs.getString('session_id') ?? '';
+
     final response = await http.get(
-      url,
-      headers: {'Content-Type': 'application/json'},
+      Uri.parse('$baseUrl/me'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Cookie': sessionId,
+      },
     );
+
     return response;
   }
 
   Future<http.Response> searchUser(String query) async {
+    final prefs = await SharedPreferences.getInstance();
+    final sessionId = prefs.getString('session_id') ?? '';
+
     final url = Uri.parse('$baseUrl/search-user?q=$query');
     final response = await http.get(
       url,
-      headers: {'Content-Type': 'application/json'},
+      headers: {
+        'Content-Type': 'application/json',
+        'Cookie': sessionId,
+      },
     );
     return response;
   }
 
   Future<http.Response> createRelationship(String targetId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final sessionId = prefs.getString('session_id') ?? '';
+
     final url = Uri.parse('$baseUrl/relationship/new');
     final response = await http.post(
       url,
-      headers: {'Content-Type': 'application/json'},
+      headers: {
+        'Content-Type': 'application/json',
+        'Cookie': sessionId,
+      },
       body: jsonEncode({
         'target_id': targetId,
       }),
@@ -84,10 +110,16 @@ class ApiService {
   }
 
   Future<http.Response> createLetter(String targetId, String content) async {
+    final prefs = await SharedPreferences.getInstance();
+    final sessionId = prefs.getString('session_id') ?? '';
+
     final url = Uri.parse('$baseUrl/letter/new');
     final response = await http.post(
       url,
-      headers: {'Content-Type': 'application/json'},
+      headers: {
+        'Content-Type': 'application/json',
+        'Cookie': sessionId,
+      },
       body: jsonEncode({
         'target_id': targetId,
         'content': content,
@@ -97,36 +129,65 @@ class ApiService {
   }
 
   Future<http.Response> getSendHistory() async {
+    final prefs = await SharedPreferences.getInstance();
+    final sessionId = prefs.getString('session_id') ?? '';
+
     final url = Uri.parse('$baseUrl/letter/send_history');
     final response = await http.get(
       url,
-      headers: {'Content-Type': 'application/json'},
+      headers: {
+        'Content-Type': 'application/json',
+        'Cookie': sessionId,
+      },
     );
     return response;
   }
 
   Future<http.Response> getReceiveHistory() async {
-    return await http.get(Uri.parse('$baseUrl/letter/receive_history'));
+    final prefs = await SharedPreferences.getInstance();
+    final sessionId = prefs.getString('session_id') ?? '';
+
+    final url = Uri.parse('$baseUrl/letter/receive_history');
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Cookie': sessionId,
+      },
+    );
+    return response;
   }
 
   Future<http.Response> readLetter(String letterId) async {
-    return await http.post(
-      Uri.parse('$baseUrl/letter/read'),
-      headers: {'Content-Type': 'application/json'},
+    final prefs = await SharedPreferences.getInstance();
+    final sessionId = prefs.getString('session_id') ?? '';
+
+    final url = Uri.parse('$baseUrl/letter/read');
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Cookie': sessionId,
+      },
       body: jsonEncode({
         'letter_id': letterId,
       }),
     );
+    return response;
   }
 
   Future<http.Response> getContacts() async {
+    final prefs = await SharedPreferences.getInstance();
+    final sessionId = prefs.getString('session_id') ?? '';
+
     final url = Uri.parse('$baseUrl/contacts');
     final response = await http.get(
       url,
-      headers: {'Content-Type': 'application/json'},
+      headers: {
+        'Content-Type': 'application/json',
+        'Cookie': sessionId,
+      },
     );
     return response;
   }
 }
-
-

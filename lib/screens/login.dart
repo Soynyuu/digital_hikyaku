@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart'; // 追加: GoogleFontsパッケージをインポート
+import 'package:google_fonts/google_fonts.dart';
 import '../services/api_service.dart';
 import 'bottombar.dart';
 import 'dart:convert';
 import '../widgets/background_scaffold.dart';
-import 'registar.dart'; // 追加: 登録画面をインポート
+import 'registar.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -61,13 +61,12 @@ class _LoginScreenState extends State<LoginScreen> {
     return BackgroundScaffold(
       appBar: AppBar(
         title: const Text('ログイン'),
-        backgroundColor: Colors.transparent, // 変更なし
-        elevation: 0, // 変更なし
-        iconTheme: IconThemeData(color: Colors.white), // 追加: アイコンの色を白に設定
-        titleTextStyle: GoogleFonts.sawarabiMincho(
-            color: Colors.white, fontSize: 20), // 変更: GoogleFonts.sawarabiMinchoを使用
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        iconTheme: IconThemeData(color: Colors.white),
+        titleTextStyle:
+            GoogleFonts.sawarabiMincho(color: Colors.white, fontSize: 20),
       ),
-      // ...existing code...
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -100,7 +99,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const RegisterScreen()),
+                    MaterialPageRoute(
+                        builder: (context) => const RegisterScreen()),
                   );
                 },
                 child: const Text('アカウントをお持ちでない方はこちら'),
@@ -109,7 +109,6 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
       ),
-// ...existing code...
     );
   }
 }
