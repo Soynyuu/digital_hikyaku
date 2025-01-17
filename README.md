@@ -17,3 +17,7 @@ flutter clean
 flutter pub get
 flutter run
 ~~~
+## MEMO
+- 素材系
+    - レターセット
+        - https://illustmansion.com/template/flame/letter-blue-flowers
