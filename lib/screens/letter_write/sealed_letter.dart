@@ -31,7 +31,7 @@ class SealedLetterScreen extends StatelessWidget {
                     );
                   },
                   child: Image.asset(
-                    'assets/icons/letter.png', // 変更: 画像パスをletter.pngに変更
+                    'assets/icons/close_letter.png', // 変更: 画像パスをletter.pngに変更
                     width: 400,
                     height: 400,
                   ),

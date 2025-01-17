@@ -43,8 +43,8 @@ class PostLetterScreen extends StatelessWidget {
           onTap: () => _postLetter(context),
           child: Image.asset(
             'assets/icons/letter.png',
-            width: 400,
-            height: 400,
+            width: 600,
+            height: 600,
           ),
         ),
       ),
