@@ -1,21 +1,26 @@
 import 'package:flutter/material.dart';
-import 'screens/bottombar.dart';
+import 'package:flutter/foundation.dart';
+import 'screens/login.dart';
 
 void main() {
-  runApp(const MyApp());
+  // デバッグモードでHTTPSの証明書エラーを無視
+  if (kDebugMode) {
+    WidgetsFlutterBinding.ensureInitialized();
+  }
+  
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
+  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Digital Hikyaku',
+      title: 'digital_hikyaku',
       theme: ThemeData(
         primarySwatch: Colors.brown,
+        scaffoldBackgroundColor: Colors.transparent,
       ),
-      home: BottomBar(key: BottomBar.globalKey), // globalKeyを渡す
+      home: const LoginScreen(),
     );
   }
-}
