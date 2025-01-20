@@ -7,7 +7,7 @@ void main() {
   if (kDebugMode) {
     WidgetsFlutterBinding.ensureInitialized();
   }
-  
+
   runApp(MyApp());
 }
 
@@ -24,3 +24,4 @@ class MyApp extends StatelessWidget {
       home: const LoginScreen(),
     );
   }
+}
