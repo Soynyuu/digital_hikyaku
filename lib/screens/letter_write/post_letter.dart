@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../widgets/background_scaffold.dart';
 import '../home/home.dart'; // HomeScreenをインポート
+import '../../models/letter.dart'; // Letterクラスをインポート
 
 class PostLetterScreen extends StatelessWidget {
   final String recipient;
@@ -30,6 +31,19 @@ class PostLetterScreen extends StatelessWidget {
           ),
         ],
       ),
+    );
+
+    // ダミーの手紙を作成する場合、すべての必要なフィールドを提供します
+    Letter dummyLetter = Letter(
+      id: '3',
+      senderId: 'sender_3',
+      recipientId: 'recipient_3',
+      recipientName: '田中 一郎', // 新規追加
+      letterSet: 'セットC',         // 新規追加
+      content: 'これは投稿されたダミー手紙です。',
+      isArrived: true,
+      arriveAt: DateTime.now(),
+      readFlag: false,
     );
   }
 

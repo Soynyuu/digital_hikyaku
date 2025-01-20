@@ -15,51 +15,9 @@ class LetterDetailScreen extends StatefulWidget {
 }
 
 class _LetterDetailScreenState extends State<LetterDetailScreen> {
-  final ApiService _apiService = ApiService();
-  String? _content;
-  String? _error;
-  bool _isLoading = false;
-
   @override
   void initState() {
     super.initState();
-    _loadLetterContent();
-  }
-
-  Future<void> _loadLetterContent() async {
-    if (!widget.letter.isArrived) {
-      setState(() {
-        _error = 'この手紙はまだ開封できません';
-      });
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final response = await _apiService.readLetter(widget.letter.id);
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        setState(() {
-          _content = data['content'];
-        });
-      } else {
-        final error = jsonDecode(response.body);
-        setState(() {
-          _error = error['error'] ?? '手紙を開封できませんでした';
-        });
-      }
-    } catch (e) {
-      setState(() {
-        _error = '通信エラーが発生しました';
-      });
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
   }
 
   @override
@@ -72,18 +30,34 @@ class _LetterDetailScreenState extends State<LetterDetailScreen> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: _isLoading 
-          ? const Center(child: CircularProgressIndicator())
-          : _error != null
-            ? Center(
-                child: Text(_error!, style: GoogleFonts.sawarabiMincho(color: Colors.red)),
-              )
-            : SingleChildScrollView(
-                child: Text(
-                  _content ?? '',
-                  style: GoogleFonts.sawarabiMincho(fontSize: 16),
-                ),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '受信者: ${widget.letter.recipientName}',
+                style: GoogleFonts.sawarabiMincho(
+                    fontSize: 18, fontWeight: FontWeight.bold),
               ),
+              SizedBox(height: 10),
+              Text(
+                'レターセット: ${widget.letter.letterSet}',
+                style: GoogleFonts.sawarabiMincho(
+                    fontSize: 16, color: Colors.grey),
+              ),
+              SizedBox(height: 20),
+              Image.asset(
+                'assets/letter_set/${widget.letter.letterSet}.png',
+                fit: BoxFit.cover,
+              ),
+              SizedBox(height: 20),
+              Text(
+                widget.letter.content, // ダミーデータの内容を直接表示
+                style: GoogleFonts.sawarabiMincho(fontSize: 16),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

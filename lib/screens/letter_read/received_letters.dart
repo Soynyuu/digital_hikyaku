@@ -5,6 +5,7 @@ import '../../models/letter.dart';
 import '../../services/api_service.dart';
 import 'letter_detail.dart';
 import '../../widgets/background_scaffold.dart';
+
 class ReceivedLettersScreen extends StatefulWidget {
   const ReceivedLettersScreen({super.key});
 
@@ -23,13 +24,33 @@ class _ReceivedLettersScreenState extends State<ReceivedLettersScreen> {
   }
 
   Future<void> _fetchReceivedLetters() async {
-    final response = await _apiService.getReceiveHistory();
-    if (response.statusCode == 200) {
-      final List<dynamic> data = jsonDecode(response.body);
-      setState(() {
-        _letters = data.map((item) => Letter.fromJson(item)).toList();
-      });
-    }
+    // ダミーデータを使用
+    setState(() {
+      _letters = [
+        Letter(
+          id: '1',
+          senderId: 'sender_1',
+          recipientId: 'recipient_1',
+          recipientName: '山田 太郎', // 新規追加
+          letterSet: 'letter_set_2',         // 新規追加
+          isArrived: true,
+          arriveAt: DateTime.now(),
+          readFlag: false,
+          content: 'これはダミーの手紙です。',
+        ),
+        Letter(
+          id: '2',
+          senderId: 'sender_2',
+          recipientId: 'recipient_2',
+          recipientName: '佐藤 花子', // 新規追加
+          letterSet: 'letter_set_2',         // 新規追加
+          isArrived: false,
+          arriveAt: DateTime.now().add(Duration(days: 1)),
+          readFlag: false,
+          content: 'もう一つのダミー手紙。',
+        ),
+      ];
+    });
   }
 
   @override
@@ -40,23 +61,6 @@ class _ReceivedLettersScreenState extends State<ReceivedLettersScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => SentLettersScreen(),
-                ),
-              );
-            },
-            child: Text(
-              '送信済み',
-              style: GoogleFonts.sawarabiMincho(
-                color: Colors.brown,
-                fontSize: 16,
-              ),
-            ),
-          ),
         ],
       ),
       body: RefreshIndicator(
@@ -74,18 +78,7 @@ class _ReceivedLettersScreenState extends State<ReceivedLettersScreen> {
                 final letter = _letters[index];
                 return Card(
                   margin: const EdgeInsets.all(8),
-                  child: ListTile(
-                    title: Text(
-                      letter.isArrived ? '届いた手紙' : '配達中の手紙',
-                      style: GoogleFonts.sawarabiMincho(),
-                    ),
-                    subtitle: Text(
-                      '到着予定: ${letter.arriveAt.toString()}',
-                      style: GoogleFonts.sawarabiMincho(),
-                    ),
-                    trailing: letter.readFlag 
-                      ? const Icon(Icons.mark_email_read)
-                      : const Icon(Icons.mail),
+                  child: GestureDetector(
                     onTap: () {
                       Navigator.push(
                         context,
@@ -94,6 +87,51 @@ class _ReceivedLettersScreenState extends State<ReceivedLettersScreen> {
                         ),
                       );
                     },
+                    child: Container(
+                      height: 150,
+                      decoration: BoxDecoration(
+                        image: DecorationImage(
+                          image: AssetImage('assets/letter_set/${letter.letterSet}.png'),
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      child: Container(
+                        color: Colors.black.withOpacity(0.3),
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              letter.isArrived ? '届いた手紙' : '配達中の手紙',
+                              style: GoogleFonts.sawarabiMincho(
+                                color: Colors.white,
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            SizedBox(height: 8),
+                            Text(
+                              '受信者: ${letter.recipientName}',
+                              style: GoogleFonts.sawarabiMincho(
+                                color: Colors.white,
+                                fontSize: 16,
+                              ),
+                            ),
+                            SizedBox(height: 8),
+                            Text(
+                              letter.content,
+                              style: GoogleFonts.sawarabiMincho(
+                                color: Colors.white,
+                                fontSize: 14,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
                 );
               },
