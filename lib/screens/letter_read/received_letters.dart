@@ -39,6 +39,25 @@ class _ReceivedLettersScreenState extends State<ReceivedLettersScreen> {
         title: Text('受信した手紙', style: GoogleFonts.sawarabiMincho()),
         backgroundColor: Colors.transparent,
         elevation: 0,
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => SentLettersScreen(),
+                ),
+              );
+            },
+            child: Text(
+              '送信済み',
+              style: GoogleFonts.sawarabiMincho(
+                color: Colors.brown,
+                fontSize: 16,
+              ),
+            ),
+          ),
+        ],
       ),
       body: RefreshIndicator(
         onRefresh: _fetchReceivedLetters,
