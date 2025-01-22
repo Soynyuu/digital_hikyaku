@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:geolocator/geolocator.dart';
 import '../../widgets/background_scaffold.dart';
+
 class WalkHistoryScreen extends StatefulWidget {
   const WalkHistoryScreen({super.key});
 
@@ -12,6 +13,8 @@ class WalkHistoryScreen extends StatefulWidget {
 
 class _WalkHistoryScreenState extends State<WalkHistoryScreen> {
   String _locationMessage = "現在の位置を取得しています...";
+  double _currentSteps = 7000;
+  final double _requiredSteps = 10000;
 
   @override
   void initState() {
@@ -65,10 +68,69 @@ class _WalkHistoryScreenState extends State<WalkHistoryScreen> {
       appBar: AppBar(
         title: Text('ウォーク履歴', style: GoogleFonts.sawarabiGothic()),
       ),
-      body: Center(
-        child: Text(
-          _locationMessage,
-          style: GoogleFonts.sawarabiGothic(fontSize: 24),
+      body: SafeArea(
+        // SafeAreaを追加
+        child: Padding(
+          padding: const EdgeInsets.all(16.0), // パディングを調整
+          child: ListView(
+            // ColumnをListViewに変更
+            children: [
+              Card(
+                // プログレスバーをCardで囲む
+                elevation: 4,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      LinearProgressIndicator(
+                        value: _currentSteps / _requiredSteps,
+                        minHeight: 20, // プログレスバーを太く
+                        backgroundColor: Colors.grey[300],
+                        valueColor:
+                            AlwaysStoppedAnimation<Color>(Colors.blueAccent),
+                      ),
+                      SizedBox(height: 10),
+                      Text(
+                        '${_currentSteps.toInt()}歩 / $_requiredSteps歩',
+                        style: GoogleFonts.sawarabiMincho(fontSize: 16),
+                      ),
+                      Text(
+                        'Sechack子ちゃんへの手紙を届けるのに必要な歩数',
+                        style: GoogleFonts.sawarabiMincho(fontSize: 18),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              SizedBox(height: 20),
+
+              SizedBox(height: 20),
+              Card(
+                // ボタンをCardで囲む
+                elevation: 4,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: ElevatedButton(
+                    onPressed: _currentSteps >= _requiredSteps
+                        ? () {
+                            // 手紙を送信する処理をここに追加
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('手紙が送信されました！')),
+                            );
+                          }
+                        : null,
+                    child: Text('手紙を送る'),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

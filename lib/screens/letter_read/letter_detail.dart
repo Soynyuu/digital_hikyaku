@@ -23,39 +23,27 @@ class _LetterDetailScreenState extends State<LetterDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return BackgroundScaffold(
+      backgroundImage: 'assets/letter_set/${widget.letter.letterSet}.png', // 追加
       appBar: AppBar(
         title: Text('手紙', style: GoogleFonts.sawarabiMincho()),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
+        backgroundColor: Colors.transparent, // 追加
+        elevation: 0, // 追加
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                '受信者: ${widget.letter.recipientName}',
-                style: GoogleFonts.sawarabiMincho(
-                    fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 10),
-              Text(
-                'レターセット: ${widget.letter.letterSet}',
-                style: GoogleFonts.sawarabiMincho(
-                    fontSize: 16, color: Colors.grey),
-              ),
-              SizedBox(height: 20),
-              Image.asset(
-                'assets/letter_set/${widget.letter.letterSet}.png',
-                fit: BoxFit.cover,
-              ),
-              SizedBox(height: 20),
-              Text(
-                widget.letter.content, // ダミーデータの内容を直接表示
-                style: GoogleFonts.sawarabiMincho(fontSize: 16),
-              ),
-            ],
+      body: Center( // 修正: PaddingとSingleChildScrollViewをCenterに変更
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min, // 追加: 内容を中央に配置
+              crossAxisAlignment: CrossAxisAlignment.center, // 修正: 中央揃え
+              children: [
+                Text(
+                  widget.letter.content, // ダミーデータの内容を直接表示
+                  style: GoogleFonts.sawarabiMincho(fontSize: 16),
+                  textAlign: TextAlign.left, // 追加: テキストを中央揃え
+                ),
+              ],
+            ),
           ),
         ),
       ),

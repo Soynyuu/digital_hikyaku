@@ -23,8 +23,8 @@ class CheckLetterScreen extends StatelessWidget {
           '手紙の確認',
           style: GoogleFonts.sawarabiMincho(),
         ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
+        backgroundColor: Colors.transparent, // 追加
+        elevation: 0, // 追加
       ),
       body: Stack(
         children: [
