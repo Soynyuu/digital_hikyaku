@@ -6,12 +6,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 class ApiService {
   // android studioのエミュでデバッグするとき
   static const String baseUrl = 'http://10.0.2.2:1080/api';
-  
+
   // ブラウザでデバッグするとき
   // static const String baseUrl = 'http://127.0.0.1:1080/api';
 
   Future<http.Response> register(
-      String name, String displayName, String password) async {
+      String name, String displayName, String password, double userLongitude , double userLatitude) async {
     return await http.post(
       Uri.parse('$baseUrl/register'),
       headers: {'Content-Type': 'application/json'},
@@ -19,6 +19,8 @@ class ApiService {
         'name': name,
         'display_name': displayName,
         'password': password,
+        'user_longitude': userLongitude,
+        'user_latitude': userLatitude,
       }),
     );
   }
