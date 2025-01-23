@@ -94,7 +94,9 @@ class _SelectRecipientScreenState extends State<SelectRecipientScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => SelectLettersetScreen()),
+                          builder: (context) => SelectLettersetScreen(
+                                recipient: selectedRecipient ?? '',
+                              )),
                     );
                   },
                   child: Text('レターセットを選択へ >'

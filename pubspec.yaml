@@ -18,6 +18,7 @@ dependencies:
   rive: ^0.13.20
   http: ^1.2.2
   shared_preferences: ^2.3.5
+  geolocator: ^13.0.2
 
 dev_dependencies:
   flutter_test:
@@ -39,6 +40,7 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
+    - assets/digital_hikyaku_logo.png
     - assets/background.jpg
     - assets/letter_set/letter_set_1.jpeg
     - assets/letter_set/letter_set_2.jpeg

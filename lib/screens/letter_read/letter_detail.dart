@@ -15,75 +15,37 @@ class LetterDetailScreen extends StatefulWidget {
 }
 
 class _LetterDetailScreenState extends State<LetterDetailScreen> {
-  final ApiService _apiService = ApiService();
-  String? _content;
-  String? _error;
-  bool _isLoading = false;
-
   @override
   void initState() {
     super.initState();
-    _loadLetterContent();
-  }
-
-  Future<void> _loadLetterContent() async {
-    if (!widget.letter.isArrived) {
-      setState(() {
-        _error = 'この手紙はまだ開封できません';
-      });
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final response = await _apiService.readLetter(widget.letter.id);
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        setState(() {
-          _content = data['content'];
-        });
-      } else {
-        final error = jsonDecode(response.body);
-        setState(() {
-          _error = error['error'] ?? '手紙を開封できませんでした';
-        });
-      }
-    } catch (e) {
-      setState(() {
-        _error = '通信エラーが発生しました';
-      });
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
   }
 
   @override
   Widget build(BuildContext context) {
     return BackgroundScaffold(
+      backgroundImage: 'assets/letter_set/${widget.letter.letterSet}.png', // 追加
       appBar: AppBar(
         title: Text('手紙', style: GoogleFonts.sawarabiMincho()),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
+        backgroundColor: Colors.transparent, // 追加
+        elevation: 0, // 追加
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: _isLoading 
-          ? const Center(child: CircularProgressIndicator())
-          : _error != null
-            ? Center(
-                child: Text(_error!, style: GoogleFonts.sawarabiMincho(color: Colors.red)),
-              )
-            : SingleChildScrollView(
-                child: Text(
-                  _content ?? '',
+      body: Center( // 修正: PaddingとSingleChildScrollViewをCenterに変更
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min, // 追加: 内容を中央に配置
+              crossAxisAlignment: CrossAxisAlignment.center, // 修正: 中央揃え
+              children: [
+                Text(
+                  widget.letter.content, // ダミーデータの内容を直接表示
                   style: GoogleFonts.sawarabiMincho(fontSize: 16),
+                  textAlign: TextAlign.left, // 追加: テキストを中央揃え
                 ),
-              ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

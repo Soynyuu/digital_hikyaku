@@ -5,6 +5,7 @@ import '../../models/letter.dart';
 import '../../services/api_service.dart';
 import 'letter_detail.dart';
 import '../../widgets/background_scaffold.dart';
+
 class ReceivedLettersScreen extends StatefulWidget {
   const ReceivedLettersScreen({super.key});
 
@@ -23,13 +24,33 @@ class _ReceivedLettersScreenState extends State<ReceivedLettersScreen> {
   }
 
   Future<void> _fetchReceivedLetters() async {
-    final response = await _apiService.getReceiveHistory();
-    if (response.statusCode == 200) {
-      final List<dynamic> data = jsonDecode(response.body);
-      setState(() {
-        _letters = data.map((item) => Letter.fromJson(item)).toList();
-      });
-    }
+    // ダミーデータを使用
+    setState(() {
+      _letters = [
+        Letter(
+          id: '1',
+          senderId: 'sender_1',
+          recipientId: 'recipient_1',
+          recipientName: 'Sechackくん', // 新規追加
+          letterSet: 'letter_set_2',         // 新規追加
+          isArrived: true,
+          arriveAt: DateTime.now(),
+          readFlag: false,
+          content: 'sechackちゃんへ\n\n\n\nこんにちは、sechackくんと申します。\nこれからよろしくお願いします。\n\n\n\n\nSechackくんより',
+        ),
+        Letter(
+          id: '2',
+          senderId: 'sender_2',
+          recipientId: 'recipient_2',
+          recipientName: 'sechackちゃん', // 新規追加
+          letterSet: 'letter_set_2',         // 新規追加
+          isArrived: false,
+          arriveAt: DateTime.now().add(Duration(days: 1)),
+          readFlag: false,
+          content: 'もう一つのダミー手紙。',
+        ),
+      ];
+    });
   }
 
   @override
@@ -39,6 +60,8 @@ class _ReceivedLettersScreenState extends State<ReceivedLettersScreen> {
         title: Text('受信した手紙', style: GoogleFonts.sawarabiMincho()),
         backgroundColor: Colors.transparent,
         elevation: 0,
+        actions: [
+        ],
       ),
       body: RefreshIndicator(
         onRefresh: _fetchReceivedLetters,
@@ -61,7 +84,7 @@ class _ReceivedLettersScreenState extends State<ReceivedLettersScreen> {
                       style: GoogleFonts.sawarabiMincho(),
                     ),
                     subtitle: Text(
-                      '到着予定: ${letter.arriveAt.toString()}',
+                      '受信者: ${letter.recipientName}',
                       style: GoogleFonts.sawarabiMincho(),
                     ),
                     trailing: letter.readFlag 

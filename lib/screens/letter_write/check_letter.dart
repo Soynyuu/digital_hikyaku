@@ -6,11 +6,13 @@ import 'sealed_letter.dart'; // 追加: SealedLetterScreenをインポート
 class CheckLetterScreen extends StatelessWidget {
   final String backgroundImage;
   final String letterText;
+  final String recipient;
 
   const CheckLetterScreen({
     super.key,
     required this.backgroundImage,
     required this.letterText,
+    required this.recipient,
   });
 
   @override
@@ -21,8 +23,8 @@ class CheckLetterScreen extends StatelessWidget {
           '手紙の確認',
           style: GoogleFonts.sawarabiMincho(),
         ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
+        backgroundColor: Colors.transparent, // 追加
+        elevation: 0, // 追加
       ),
       body: Stack(
         children: [
@@ -61,7 +63,7 @@ class CheckLetterScreen extends StatelessWidget {
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const SealedLetterScreen(),
+                    builder: (context) => SealedLetterScreen(recipient: recipient),
                   ),
                 );
               },

@@ -1,7 +1,8 @@
+import 'package:digital_hikyaku/widgets/background_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../services/api_service.dart';
-
+import '../../widgets/background_scaffold.dart';
 class ContactsScreen extends StatefulWidget {
   const ContactsScreen({super.key});
 
@@ -47,7 +48,7 @@ class _ContactsScreenState extends State<ContactsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return BackgroundScaffold(
       appBar: AppBar(
         title: Text(
           '住所録',
@@ -89,13 +90,6 @@ class _ContactsScreenState extends State<ContactsScreen> {
                 itemCount: searchResults.length,
                 itemBuilder: (context, index) {
                   final user = searchResults[index];
-                  return ListTile(
-                    title: Text(user),
-                    trailing: IconButton(
-                      icon: Icon(Icons.add),
-                      onPressed: () => _addContact(user),
-                    ),
-                  );
                 },
               ),
             ),

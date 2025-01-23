@@ -4,9 +4,11 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
-  // ベースURLをlocalhostに変更
+  // android studioのエミュでデバッグするとき
   static const String baseUrl = 'http://10.0.2.2:1080/api';
-  // static const String baseUrl = 'http://127.0.0.1:1080/api';  // alternativeのURL
+  
+  // ブラウザでデバッグするとき
+  // static const String baseUrl = 'http://127.0.0.1:1080/api';
 
   Future<http.Response> register(
       String name, String displayName, String password) async {

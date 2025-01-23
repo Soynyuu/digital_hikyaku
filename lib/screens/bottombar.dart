@@ -9,6 +9,9 @@ import 'letter_read/received_letters.dart'; // 追加: 受信手紙一覧画面�
 class BottomBar extends StatefulWidget {
   const BottomBar({super.key});
 
+  static final GlobalKey<_BottomBarState> globalKey =
+      GlobalKey<_BottomBarState>();
+
   @override
   _BottomBarState createState() => _BottomBarState();
 }
@@ -30,14 +33,18 @@ class _BottomBarState extends State<BottomBar> {
     });
   }
 
+  void selectTab(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return BackgroundScaffold(
       body: _widgetOptions.elementAt(_selectedIndex),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
-        showSelectedLabels: false,
-        showUnselectedLabels: false,
         backgroundColor: Colors.transparent,
         elevation: 0,
         items: const <BottomNavigationBarItem>[
@@ -47,19 +54,19 @@ class _BottomBarState extends State<BottomBar> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.local_post_office),
-            label: '見る',
+            label: '届いた手紙',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.history_edu),
-            label: 'History',
+            label: '手紙を書く',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.directions_walk),
-            label: 'walk_history',
+            label: '飛脚履歴',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.contacts),
-            label: 'contacts',
+            label: '連絡先',
           ),
         ],
         currentIndex: _selectedIndex,
