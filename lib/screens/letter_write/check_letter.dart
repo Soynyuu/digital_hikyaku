@@ -6,13 +6,15 @@ import 'sealed_letter.dart'; // 追加: SealedLetterScreenをインポート
 class CheckLetterScreen extends StatelessWidget {
   final String backgroundImage;
   final String letterText;
-  final String recipient;
+  final String recipientId;
+  final String recipientName;
 
   const CheckLetterScreen({
     super.key,
     required this.backgroundImage,
     required this.letterText,
-    required this.recipient,
+    required this.recipientId,
+    required this.recipientName,
   });
 
   @override
@@ -63,7 +65,12 @@ class CheckLetterScreen extends StatelessWidget {
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => SealedLetterScreen(recipient: recipient),
+                    builder: (context) => SealedLetterScreen(
+                      recipientId: recipientId,
+                      recipientName: recipientName,
+                      letterText: letterText,
+                      letterSetId: backgroundImage,
+                    ),
                   ),
                 );
               },

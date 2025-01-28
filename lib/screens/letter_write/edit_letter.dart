@@ -4,12 +4,14 @@ import 'check_letter.dart';
 
 class EditLetterScreen extends StatefulWidget {
   final String backgroundImage;
-  final String recipient;
+  final String recipientId;
+  final String recipientName;
 
   const EditLetterScreen({
     super.key, 
     required this.backgroundImage,
-    required this.recipient,
+    required this.recipientId,
+    required this.recipientName,
   });
 
   @override
@@ -63,7 +65,8 @@ class _EditLetterScreenState extends State<EditLetterScreen> {
                         builder: (context) => CheckLetterScreen(
                           backgroundImage: widget.backgroundImage,
                           letterText: _textController.text,
-                          recipient: widget.recipient,
+                          recipientId: widget.recipientId,
+                          recipientName: widget.recipientName,
                         ),
                       ),
                     );

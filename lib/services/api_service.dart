@@ -117,7 +117,7 @@ class ApiService {
   Future<http.Response> createLetter(
     String targetId,
     String content,
-    String letterSetId, // letter_set_idパラメータを追加
+    String letterSetId,
   ) async {
     final prefs = await SharedPreferences.getInstance();
     final sessionId = prefs.getString('session_id') ?? '';
@@ -132,7 +132,7 @@ class ApiService {
       body: jsonEncode({
         'target_id': targetId,
         'content': content,
-        'letter_set_id': letterSetId, // letter_set_idを追加
+        'letter_set_id': letterSetId,
       }),
     );
     return response;
