@@ -1,8 +1,9 @@
-import 'package:digital_hikyaku/widgets/background_scaffold.dart';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../services/api_service.dart';
 import '../../widgets/background_scaffold.dart';
+
 class ContactsScreen extends StatefulWidget {
   const ContactsScreen({super.key});
 
@@ -12,9 +13,10 @@ class ContactsScreen extends StatefulWidget {
 
 class _ContactsScreenState extends State<ContactsScreen> {
   final ApiService apiService = ApiService();
-  List<String> contacts = ['Contact 1', 'Contact 2']; // ダミーデータ
-  List<String> searchResults = ['User 1', 'User 2']; // ダミーデータ
+  List<dynamic> contacts = [];
+  List<dynamic> searchResults = [];
   TextEditingController searchController = TextEditingController();
+  bool isSearching = false;
 
   @override
   void initState() {
@@ -23,27 +25,66 @@ class _ContactsScreenState extends State<ContactsScreen> {
   }
 
   Future<void> _loadContacts() async {
-    // ここで連絡先一覧を取得するAPIを呼び出します
-    // ダミーデータを使用
-    setState(() {
-      contacts = ['Contact 1', 'Contact 2'];
-    });
+    try {
+      final response = await apiService.getContacts();
+      if (response.statusCode == 200) {
+        setState(() {
+          contacts = jsonDecode(response.body);
+        });
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('連絡先の読み込みに失敗しました: $e')),
+      );
+    }
   }
 
   Future<void> _searchUser(String query) async {
-    // ここでユーザー検索APIを呼び出します
-    // ダミーデータを使用
+    if (query.isEmpty) {
+      setState(() {
+        searchResults = [];
+        isSearching = false;
+      });
+      return;
+    }
+
     setState(() {
-      searchResults = ['User 1', 'User 2'];
+      isSearching = true;
     });
+
+    try {
+      final response = await apiService.searchUser(query);
+      if (response.statusCode == 200) {
+        setState(() {
+          searchResults = jsonDecode(response.body);
+        });
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('ユーザー検索に失敗しました: $e')),
+      );
+    }
   }
 
   Future<void> _addContact(String targetId) async {
-    // ここで連絡先追加APIを呼び出します
-    // ダミー処理
-    setState(() {
-      contacts.add(targetId);
-    });
+    try {
+      final response = await apiService.createRelationship(targetId);
+      if (response.statusCode == 200) {
+        await _loadContacts(); // 連絡先リストを更新
+        setState(() {
+          searchResults = []; // 検索結果をクリア
+          searchController.clear(); // 検索フィールドをクリア
+          isSearching = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('連絡先を追加しました')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('連絡先の追加に失敗しました: $e')),
+      );
+    }
   }
 
   @override
@@ -55,46 +96,64 @@ class _ContactsScreenState extends State<ContactsScreen> {
           style: GoogleFonts.sawarabiMincho(),
         ),
         backgroundColor: Colors.transparent,
+        elevation: 0,
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: TextField(
-              controller: searchController,
-              onChanged: _searchUser,
-              decoration: InputDecoration(
-                labelText: 'ユーザー名で検索',
-                suffixIcon: IconButton(
-                  icon: Icon(Icons.search),
-                  onPressed: () => _searchUser(searchController.text),
+      body: SafeArea(  // SafeAreaを追加
+        child: Padding( // Paddingを追加してコンテンツの位置を調整
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Column(
+            children: [
+              const SizedBox(height: 8.0), // 上部に少し余白を追加
+              TextField(
+                controller: searchController,
+                onChanged: _searchUser,
+                decoration: InputDecoration(
+                  labelText: 'ユーザー名で検索',
+                  suffixIcon: IconButton(
+                    icon: const Icon(Icons.search),
+                    onPressed: () => _searchUser(searchController.text),
+                  ),
                 ),
               ),
-            ),
-          ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: contacts.length,
-              itemBuilder: (context, index) {
-                // 連絡先の表示
-                final contact = contacts[index];
-                return ListTile(
-                  title: Text(contact),
-                );
-              },
-            ),
-          ),
-          if (searchResults.isNotEmpty)
-            Expanded(
-              child: ListView.builder(
-                itemCount: searchResults.length,
-                itemBuilder: (context, index) {
-                  final user = searchResults[index];
-                },
+              Expanded(
+                child: isSearching
+                    ? _buildSearchResults()
+                    : _buildContactsList(),
               ),
-            ),
-        ],
+            ],
+          ),
+        ),
       ),
+    );
+  }
+
+  Widget _buildContactsList() {
+    return ListView.builder(
+      itemCount: contacts.length,
+      itemBuilder: (context, index) {
+        final contact = contacts[index];
+        return ListTile(
+          title: Text(contact['display_name'] ?? 'Unknown'),
+          subtitle: Text(contact['name'] ?? ''),
+        );
+      },
+    );
+  }
+
+  Widget _buildSearchResults() {
+    return ListView.builder(
+      itemCount: searchResults.length,
+      itemBuilder: (context, index) {
+        final user = searchResults[index];
+        return ListTile(
+          title: Text(user['display_name'] ?? 'Unknown'),
+          subtitle: Text(user['name'] ?? ''),
+          trailing: IconButton(
+            icon: const Icon(Icons.person_add),
+            onPressed: () => _addContact(user['id']),
+          ),
+        );
+      },
     );
   }
 }

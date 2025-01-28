@@ -190,7 +190,7 @@ class ApiService {
     final prefs = await SharedPreferences.getInstance();
     final sessionId = prefs.getString('session_id') ?? '';
 
-    final url = Uri.parse('$baseUrl/contacts');
+    final url = Uri.parse('$baseUrl/relationship/list');
     final response = await http.get(
       url,
       headers: {
