@@ -7,7 +7,7 @@ void main() {
   if (kDebugMode) {
     WidgetsFlutterBinding.ensureInitialized();
   }
-  
+
   runApp(MyApp());
 }
 

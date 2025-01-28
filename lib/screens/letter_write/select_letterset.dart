@@ -4,7 +4,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'edit_letter.dart';
 
 class SelectLettersetScreen extends StatefulWidget {
-  const SelectLettersetScreen({super.key});
+  final String recipient;
+
+  const SelectLettersetScreen({super.key, required this.recipient});
 
   @override
   _SelectLettersetScreenState createState() => _SelectLettersetScreenState();
@@ -112,6 +114,7 @@ class _SelectLettersetScreenState extends State<SelectLettersetScreen> {
                           MaterialPageRoute(
                             builder: (context) => EditLetterScreen(
                               backgroundImage: selectedLetterSet!,
+                              recipient: widget.recipient,
                             ),
                           ),
                         );

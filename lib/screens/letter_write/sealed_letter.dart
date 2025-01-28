@@ -4,7 +4,9 @@ import 'post_letter.dart'; // 追加: PostLetterScreenをインポート
 import '../../widgets/background_scaffold.dart';
 
 class SealedLetterScreen extends StatelessWidget {
-  const SealedLetterScreen({super.key});
+  final String recipient;
+
+  const SealedLetterScreen({super.key, required this.recipient});
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +29,9 @@ class SealedLetterScreen extends StatelessWidget {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const PostLetterScreen()),
+                      MaterialPageRoute(
+                        builder: (context) => PostLetterScreen(recipient: recipient),
+                      ),
                     );
                   },
                   child: Image.asset(
