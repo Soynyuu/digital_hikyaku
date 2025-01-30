@@ -1,50 +1,97 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'dart:convert'; // 追加
 import '../../widgets/background_scaffold.dart';
 import '../home/home.dart'; // HomeScreenをインポート
 import '../../models/letter.dart'; // Letterクラスをインポート
+import '../../services/api_service.dart';
 
 class PostLetterScreen extends StatelessWidget {
-  final String recipient;
+  final String recipientId;
+  final String recipientName;
+  final String letterText;
+  final String letterSetId;
 
-  const PostLetterScreen({super.key, required this.recipient});
+  const PostLetterScreen({
+    super.key,
+    required this.recipientId,
+    required this.recipientName,
+    required this.letterText,
+    required this.letterSetId,
+  });
 
-  void _postLetter(BuildContext context) {
-    // 手紙を投函する処理をここに実装
-    // 例: API呼び出しや確認ダイアログの表示
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('投函完了', style: GoogleFonts.sawarabiMincho()),
-        content: Text('手紙が投函されました。', style: GoogleFonts.sawarabiMincho()),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context); // ダイアログを閉じる
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (context) => const HomeScreen()),
-                (route) => false,
-              ); // HomeScreenに遷移
-            },
-            child: Text('OK', style: GoogleFonts.sawarabiMincho()),
+  void _postLetter(BuildContext context) async {
+    try {
+      final apiService = ApiService();
+      final response = await apiService.createLetter(
+        recipientId,
+        letterText,
+        letterSetId.split('/').last.split('.').first, // ファイル名から拡張子を除いたものをIDとして使用
+      );
+
+      // レスポンスボディをデコード
+      final responseData = json.decode(response.body);
+      
+      if (response.statusCode == 200) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text('投函完了', style: GoogleFonts.sawarabiMincho()),
+            content: Text(responseData['message'] ?? '手紙が投函されました。', 
+              style: GoogleFonts.sawarabiMincho()),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (context) => const HomeScreen()),
+                    (route) => false,
+                  );
+                },
+                child: Text('OK', style: GoogleFonts.sawarabiMincho()),
+              ),
+            ],
           ),
-        ],
-      ),
-    );
-
-    // ダミーの手紙を作成する場合、すべての必要なフィールドを提供します
-    Letter dummyLetter = Letter(
-      id: '3',
-      senderId: 'sender_3',
-      recipientId: 'recipient_3',
-      recipientName: '田中 一郎', // 新規追加
-      letterSet: 'セットC',         // 新規追加
-      content: 'これは投稿されたダミー手紙です。',
-      isArrived: true,
-      arriveAt: DateTime.now(),
-      readFlag: false,
-    );
+        );
+      } else {
+        String errorMessage = responseData['error'] ?? '手紙の投函に失敗しました。';
+        // デバッグ用にステータスコードも表示
+        debugPrint('Error status code: ${response.statusCode}');
+        debugPrint('Error message: $errorMessage');
+        
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text('エラー', style: GoogleFonts.sawarabiMincho()),
+            content: Text('$errorMessage\n(エラーコード: ${response.statusCode})', 
+              style: GoogleFonts.sawarabiMincho()),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text('OK', style: GoogleFonts.sawarabiMincho()),
+              ),
+            ],
+          ),
+        );
+      }
+    } catch (e) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text('エラー', style: GoogleFonts.sawarabiMincho()),
+          content: Text('手紙の投函中にエラーが発生しました。', style: GoogleFonts.sawarabiMincho()),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context); // ダイアログを閉じる
+              },
+              child: Text('OK', style: GoogleFonts.sawarabiMincho()),
+            ),
+          ],
+        ),
+      );
+    }
   }
 
   @override
@@ -73,7 +120,7 @@ class PostLetterScreen extends StatelessWidget {
             Positioned(
               top: 20,
               child: Text(
-                '宛先: $recipient',
+                '宛先: $recipientName',  // 表示用にrecipientNameを使用
                 style: GoogleFonts.sawarabiMincho(
                   fontSize: 24,
                   color: Colors.brown,

@@ -1,7 +1,9 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import '../../widgets/background_scaffold.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'select_letterset.dart';
+import '../../services/api_service.dart';
 
 class SelectRecipientScreen extends StatefulWidget {
   const SelectRecipientScreen({super.key});
@@ -11,7 +13,30 @@ class SelectRecipientScreen extends StatefulWidget {
 }
 
 class _SelectRecipientScreenState extends State<SelectRecipientScreen> {
+  final ApiService apiService = ApiService();
+  List<dynamic> contacts = [];
   String? selectedRecipient;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadContacts();
+  }
+
+  Future<void> _loadContacts() async {
+    try {
+      final response = await apiService.getContacts();
+      if (response.statusCode == 200) {
+        setState(() {
+          contacts = jsonDecode(response.body);
+        });
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('連絡先の読み込みに失敗しました: $e')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,8 +50,8 @@ class _SelectRecipientScreenState extends State<SelectRecipientScreen> {
             fontSize: 24,
           ),
         ),
-        backgroundColor: Colors.transparent, // AppBarを透明に設定
-        elevation: 0, // AppBarの影をなくす
+        backgroundColor: Colors.transparent,
+        elevation: 0,
       ),
       body: SafeArea(
         child: Column(
@@ -37,7 +62,7 @@ class _SelectRecipientScreenState extends State<SelectRecipientScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Center(
                 child: Container(
-                  width: MediaQuery.of(context).size.width * 0.8, // 横幅を小さく設定
+                  width: MediaQuery.of(context).size.width * 0.8,
                   decoration: BoxDecoration(
                     border: Border(
                       bottom: BorderSide(color: Colors.brown, width: 1.0),
@@ -49,12 +74,11 @@ class _SelectRecipientScreenState extends State<SelectRecipientScreen> {
                       '送り先を選択',
                       style: GoogleFonts.sawarabiMincho(fontSize: 20),
                     ),
-                    items: <String>['ダミー1', 'ダミー2', 'ダミー3']
-                        .map((String value) {
+                    items: contacts.map<DropdownMenuItem<String>>((contact) {
                       return DropdownMenuItem<String>(
-                        value: value,
+                        value: contact['recipient_id'],
                         child: Text(
-                          value,
+                          contact['recipient_display_name'] ?? 'Unknown',
                           style: GoogleFonts.sawarabiMincho(fontSize: 20),
                         ),
                       );
@@ -65,14 +89,14 @@ class _SelectRecipientScreenState extends State<SelectRecipientScreen> {
                       });
                     },
                     isExpanded: true,
-                    underline: SizedBox(), // デフォルトの下線を削除
+                    underline: SizedBox(),
                   ),
                 ),
               ),
             ),
             if (selectedRecipient != null)
               Padding(
-                padding: const EdgeInsets.only(top: 8.0, right: 16.0), // 右寄せに配置
+                padding: const EdgeInsets.only(top: 8.0, right: 16.0),
                 child: Align(
                   alignment: Alignment.centerRight,
                   child: Text(
@@ -84,30 +108,39 @@ class _SelectRecipientScreenState extends State<SelectRecipientScreen> {
                   ),
                 ),
               ),
-            Spacer(flex: 1), // ここでスペースを調整
+            Spacer(flex: 1),
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Align(
                 alignment: Alignment.bottomRight,
                 child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => SelectLettersetScreen(
-                                recipient: selectedRecipient ?? '',
-                              )),
-                    );
-                  },
-                  child: Text('レターセットを選択へ >'
-                  , style: GoogleFonts.sawarabiMincho(
+                  onPressed: selectedRecipient != null
+                      ? () {
+                          final selectedContact = contacts.firstWhere(
+                            (contact) => contact['recipient_id'] == selectedRecipient,
+                          );
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => SelectLettersetScreen(
+                                recipientId: selectedContact['recipient_id'].toString(),
+                                recipientName: selectedContact['recipient_display_name'] ?? 'Unknown',
+                              ),
+                            ),
+                          );
+                        }
+                      : null,
+                  child: Text(
+                    'レターセットを選択へ >',
+                    style: GoogleFonts.sawarabiMincho(
                       color: Colors.brown,
                       fontSize: 20,
-                    ),),
+                    ),
+                  ),
                 ),
               ),
             ),
-            Spacer(flex: 2), // ここでスペースを調整
+            Spacer(flex: 2),
           ],
         ),
       ),

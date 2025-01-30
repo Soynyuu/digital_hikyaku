@@ -4,9 +4,18 @@ import 'post_letter.dart'; // 追加: PostLetterScreenをインポート
 import '../../widgets/background_scaffold.dart';
 
 class SealedLetterScreen extends StatelessWidget {
-  final String recipient;
+  final String recipientId;
+  final String recipientName;
+  final String letterText;
+  final String letterSetId;
 
-  const SealedLetterScreen({super.key, required this.recipient});
+  const SealedLetterScreen({
+    super.key,
+    required this.recipientId,
+    required this.recipientName,
+    required this.letterText,
+    required this.letterSetId,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +39,12 @@ class SealedLetterScreen extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => PostLetterScreen(recipient: recipient),
+                        builder: (context) => PostLetterScreen(
+                          recipientId: recipientId,
+                          recipientName: recipientName,
+                          letterText: letterText,
+                          letterSetId: letterSetId,
+                        ),
                       ),
                     );
                   },
