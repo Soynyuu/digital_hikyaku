@@ -98,8 +98,10 @@ class _ContactsScreenState extends State<ContactsScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
-      body: SafeArea(  // SafeAreaを追加
-        child: Padding( // Paddingを追加してコンテンツの位置を調整
+      body: SafeArea(
+        // SafeAreaを追加
+        child: Padding(
+          // Paddingを追加してコンテンツの位置を調整
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Column(
             children: [
@@ -116,9 +118,8 @@ class _ContactsScreenState extends State<ContactsScreen> {
                 ),
               ),
               Expanded(
-                child: isSearching
-                    ? _buildSearchResults()
-                    : _buildContactsList(),
+                child:
+                    isSearching ? _buildSearchResults() : _buildContactsList(),
               ),
             ],
           ),
@@ -133,8 +134,8 @@ class _ContactsScreenState extends State<ContactsScreen> {
       itemBuilder: (context, index) {
         final contact = contacts[index];
         return ListTile(
-          title: Text(contact['display_name'] ?? 'Unknown'),
-          subtitle: Text(contact['name'] ?? ''),
+          title: Text(contact['recipient_display_name'] ?? 'Unknown'),
+          subtitle: Text(contact['recipient_name'] ?? ''),
         );
       },
     );

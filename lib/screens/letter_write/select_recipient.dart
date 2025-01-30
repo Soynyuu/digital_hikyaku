@@ -76,9 +76,9 @@ class _SelectRecipientScreenState extends State<SelectRecipientScreen> {
                     ),
                     items: contacts.map<DropdownMenuItem<String>>((contact) {
                       return DropdownMenuItem<String>(
-                        value: contact['id'],
+                        value: contact['recipient_id'],
                         child: Text(
-                          contact['recipient_id'] ?? 'Unknown',
+                          contact['recipient_display_name'] ?? 'Unknown',
                           style: GoogleFonts.sawarabiMincho(fontSize: 20),
                         ),
                       );
@@ -117,14 +117,14 @@ class _SelectRecipientScreenState extends State<SelectRecipientScreen> {
                   onPressed: selectedRecipient != null
                       ? () {
                           final selectedContact = contacts.firstWhere(
-                            (contact) => contact['id'] == selectedRecipient,
+                            (contact) => contact['recipient_id'] == selectedRecipient,
                           );
                           Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) => SelectLettersetScreen(
                                 recipientId: selectedContact['recipient_id'].toString(),
-                                recipientName: selectedContact['display_name'] ?? 'Unknown',
+                                recipientName: selectedContact['recipient_display_name'] ?? 'Unknown',
                               ),
                             ),
                           );
