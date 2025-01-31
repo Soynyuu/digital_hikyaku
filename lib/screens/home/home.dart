@@ -4,8 +4,8 @@ import '../letter_read/received_letters.dart';
 import '../letter_write/write_top.dart';
 import '../walk_history/walk.dart';
 import '../contacts/contacts.dart';
-import '../bottombar.dart';
-import '../../widgets/background_scaffold.dart'; // 追加: BackgroundScaffoldをインポート
+import '../bottombar.dart'; // 追加: BottomBarをインポート
+import '../../widgets/background_scaffold.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -30,13 +30,19 @@ class HomeScreen extends StatelessWidget {
         return;
     }
 
-    // 遷移先の画面をBottomBarで包む
+    // まず画面遷移を実行
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => BottomBar(initialIndex: index),
+        builder: (context) => BackgroundScaffold(
+          body: screen,
+          bottomNavigationBar: BottomBar(key: BottomBar.globalKey),
+        ),
       ),
     );
+
+    // その後でBottomBarのタブを更新
+    BottomBar.globalKey.currentState?.selectTab(index);
   }
 
   Widget _buildMenuCard(

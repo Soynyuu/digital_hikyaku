@@ -37,12 +37,6 @@ class _BottomBarState extends State<BottomBar> {
     ContactsScreen(),
   ];
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
-
   void selectTab(int index) {
     setState(() {
       _selectedIndex = index;
@@ -82,7 +76,7 @@ class _BottomBarState extends State<BottomBar> {
         currentIndex: _selectedIndex,
         selectedItemColor: Colors.brown,
         unselectedItemColor: Colors.grey,
-        onTap: _onItemTapped,
+        onTap: selectTab,
       ),
     );
   }

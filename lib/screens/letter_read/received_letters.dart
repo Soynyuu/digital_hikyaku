@@ -16,6 +16,7 @@ class ReceivedLettersScreen extends StatefulWidget {
 class _ReceivedLettersScreenState extends State<ReceivedLettersScreen> {
   final ApiService _apiService = ApiService();
   List<Letter> _letters = [];
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -24,33 +25,43 @@ class _ReceivedLettersScreenState extends State<ReceivedLettersScreen> {
   }
 
   Future<void> _fetchReceivedLetters() async {
-    // ダミーデータを使用
     setState(() {
-      _letters = [
-        Letter(
-          id: '1',
-          senderId: 'sender_1',
-          recipientId: 'recipient_1',
-          recipientName: 'Sechackくん', // 新規追加
-          letterSet: 'letter_set_2',         // 新規追加
-          isArrived: true,
-          arriveAt: DateTime.now(),
-          readFlag: false,
-          content: 'sechackちゃんへ\n\n\n\nこんにちは、sechackくんと申します。\nこれからよろしくお願いします。\n\n\n\n\nSechackくんより',
-        ),
-        Letter(
-          id: '2',
-          senderId: 'sender_2',
-          recipientId: 'recipient_2',
-          recipientName: 'sechackちゃん', // 新規追加
-          letterSet: 'letter_set_2',         // 新規追加
-          isArrived: false,
-          arriveAt: DateTime.now().add(Duration(days: 1)),
-          readFlag: false,
-          content: 'もう一つのダミー手紙。',
-        ),
-      ];
+      _isLoading = true;
     });
+
+    try {
+      final response = await _apiService.getReceiveHistory();
+      
+      if (response.statusCode == 200) {
+        final List<dynamic> lettersJson = response.data;
+        setState(() {
+          _letters = lettersJson.map((letterJson) {
+            // 送信者の名前を取得するロジックを追加する必要があります
+            return Letter(
+              id: letterJson['id'],
+              senderId: letterJson['sender_id'],
+              recipientId: letterJson['recipient_id'],
+              recipientName: letterJson['recipient_name'] ?? '不明',
+              letterSet: letterJson['letter_set_id'],
+              content: '', // 内容は手紙を開くときに取得
+              isArrived: letterJson['is_arrived'] == 1,
+              arriveAt: DateTime.parse(letterJson['arrive_at']),
+              readFlag: letterJson['read_flag'] == 1,
+            );
+          }).toList();
+        });
+      } else {
+        throw Exception('Failed to load letters');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('手紙の取得に失敗しました: $e')),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   @override
