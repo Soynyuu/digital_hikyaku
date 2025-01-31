@@ -46,8 +46,6 @@ flutter:
   assets:
     - assets/digital_hikyaku_logo.png
     - assets/background.jpg
-    - assets/letter_set/letter_set_1.jpeg
-    - assets/letter_set/letter_set_2.jpeg
     - assets/letter_set/letter_set_1.png
     - assets/letter_set/letter_set_2.png
     - assets/letter_set/letter_set_3.png
