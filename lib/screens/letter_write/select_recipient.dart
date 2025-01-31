@@ -28,13 +28,16 @@ class _SelectRecipientScreenState extends State<SelectRecipientScreen> {
       final response = await apiService.getContacts();
       if (response.statusCode == 200) {
         setState(() {
-          contacts = jsonDecode(response.data); // 修正
+          // jsonDecodeを削除し、直接response.dataを使用
+          contacts = response.data;
         });
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('連絡先の読み込みに失敗しました: $e')),
-      );
+      if (mounted) {  // contextを使用する前にmountedチェックを追加
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('連絡先の読み込みに失敗しました: $e')),
+        );
+      }
     }
   }
 
@@ -117,14 +120,18 @@ class _SelectRecipientScreenState extends State<SelectRecipientScreen> {
                   onPressed: selectedRecipient != null
                       ? () {
                           final selectedContact = contacts.firstWhere(
-                            (contact) => contact['recipient_id'] == selectedRecipient,
+                            (contact) =>
+                                contact['recipient_id'] == selectedRecipient,
                           );
                           Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) => SelectLettersetScreen(
-                                recipientId: selectedContact['recipient_id'].toString(),
-                                recipientName: selectedContact['recipient_display_name'] ?? 'Unknown',
+                                recipientId:
+                                    selectedContact['recipient_id'].toString(),
+                                recipientName:
+                                    selectedContact['recipient_display_name'] ??
+                                        'Unknown',
                               ),
                             ),
                           );
