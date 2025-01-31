@@ -29,8 +29,8 @@ class PostLetterScreen extends StatelessWidget {
         letterSetId.split('/').last.split('.').first, // ファイル名から拡張子を除いたものをIDとして使用
       );
 
-      // レスポンスボディをデコード
-      final responseData = json.decode(response.body);
+      // レスポンスデータを直接使用
+      final responseData = response.data; // jsonDecode を削除
       
       if (response.statusCode == 200) {
         showDialog(

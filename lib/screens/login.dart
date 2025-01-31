@@ -20,7 +20,7 @@ class _LoginScreenState extends State<LoginScreen> {
   String? _errorMessage;
   bool _isLoading = false;
 
-  void _login() async {
+  Future<void> _login() async {
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -31,6 +31,7 @@ class _LoginScreenState extends State<LoginScreen> {
         _nameController.text,
         _passwordController.text,
       );
+      final body = response.data; // jsonDecode を削除
 
       if (response.statusCode == 200) {
         if (!mounted) return;
@@ -39,7 +40,6 @@ class _LoginScreenState extends State<LoginScreen> {
           MaterialPageRoute(builder: (context) => const BottomBar()),
         );
       } else {
-        final body = jsonDecode(response.body);
         setState(() {
           _errorMessage = body['error'] ?? 'ログインに失敗しました';
         });

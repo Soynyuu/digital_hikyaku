@@ -28,7 +28,7 @@ class _SelectRecipientScreenState extends State<SelectRecipientScreen> {
       final response = await apiService.getContacts();
       if (response.statusCode == 200) {
         setState(() {
-          contacts = jsonDecode(response.body);
+          contacts = jsonDecode(response.data); // 修正
         });
       }
     } catch (e) {

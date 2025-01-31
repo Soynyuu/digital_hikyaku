@@ -73,13 +73,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
             MaterialPageRoute(builder: (context) => const BottomBar()),
           );
         } else {
-          final body = jsonDecode(loginResponse.body);
+          final body = loginResponse.data;
           setState(() {
             _errorMessage = body['error'] ?? 'ログインに失敗しました';
           });
         }
       } else {
-        final body = jsonDecode(response.body);
+        final body = response.data;
         setState(() {
           _errorMessage = body['error'] ?? '登録に失敗しました';
         });
