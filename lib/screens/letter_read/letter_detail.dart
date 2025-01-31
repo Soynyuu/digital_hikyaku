@@ -26,6 +26,31 @@ class _LetterDetailScreenState extends State<LetterDetailScreen> {
   }
 
   Future<void> _loadLetterContent() async {
+    if (!widget.letter.isArrived) {
+      setState(() {
+        _isLoading = false;
+      });
+      
+      final now = DateTime.now();
+      final remainingTime = widget.letter.arriveAt.difference(now);
+      final hours = remainingTime.inHours;
+      final minutes = remainingTime.inMinutes % 60;
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            '手紙はまだ到着していません。\n到着まであと約$hours時間$minutes分です',
+            style: GoogleFonts.sawarabiGothic(),
+          ),
+          duration: const Duration(seconds: 5),
+          backgroundColor: Colors.brown,
+        ),
+      );
+      
+      Navigator.pop(context);
+      return;
+    }
+
     try {
       final response = await _apiService.readLetter(widget.letter.id);
       
@@ -35,15 +60,19 @@ class _LetterDetailScreenState extends State<LetterDetailScreen> {
           _isLoading = false;
         });
       } else {
-        throw Exception('手紙の読み込みに失敗しました');
+        throw Exception(response.data['error'] ?? '手紙の読み込みに失敗しました');
       }
     } catch (e) {
       setState(() {
         _isLoading = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('手紙の読み込みに失敗しました: $e')),
+        SnackBar(
+          content: Text('手紙の読み込みに失敗しました: $e'),
+          backgroundColor: Colors.red,
+        ),
       );
+      Navigator.pop(context);
     }
   }
 
@@ -52,30 +81,71 @@ class _LetterDetailScreenState extends State<LetterDetailScreen> {
     return BackgroundScaffold(
       backgroundImage: 'assets/letter_set/${widget.letter.letterSet}.png',
       appBar: AppBar(
-        title: Text('手紙', style: GoogleFonts.sawarabiMincho()),
+        title: Text(
+          widget.letter.isArrived ? '手紙' : '配達中の手紙',
+          style: GoogleFonts.sawarabiMincho(),
+        ),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
       body: Center(
         child: _isLoading
-          ? const CircularProgressIndicator()
-          : Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Text(
-                      _content,
-                      style: GoogleFonts.sawarabiMincho(fontSize: 16),
-                      textAlign: TextAlign.left,
+            ? const CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.brown),
+              )
+            : widget.letter.isArrived
+                ? Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: SingleChildScrollView(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            _content,
+                            style: GoogleFonts.sawarabiMincho(fontSize: 16),
+                            textAlign: TextAlign.left,
+                          ),
+                        ],
+                      ),
                     ),
-                  ],
-                ),
-              ),
-            ),
+                  )
+                : _buildNotArrivedMessage(),
       ),
+    );
+  }
+
+  Widget _buildNotArrivedMessage() {
+    final now = DateTime.now();
+    final remainingTime = widget.letter.arriveAt.difference(now);
+    final hours = remainingTime.inHours;
+    final minutes = remainingTime.inMinutes % 60;
+
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(
+          Icons.schedule,
+          size: 64,
+          color: Colors.brown.shade300,
+        ),
+        const SizedBox(height: 16),
+        Text(
+          '手紙はまだ配達中です',
+          style: GoogleFonts.sawarabiMincho(
+            fontSize: 20,
+            color: Colors.brown.shade700,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          '到着まであと約$hours時間$minutes分',
+          style: GoogleFonts.sawarabiMincho(
+            fontSize: 16,
+            color: Colors.brown.shade600,
+          ),
+        ),
+      ],
     );
   }
 }
