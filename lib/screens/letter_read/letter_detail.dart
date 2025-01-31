@@ -15,37 +15,66 @@ class LetterDetailScreen extends StatefulWidget {
 }
 
 class _LetterDetailScreenState extends State<LetterDetailScreen> {
+  final ApiService _apiService = ApiService();
+  bool _isLoading = true;
+  String _content = '';
+
   @override
   void initState() {
     super.initState();
+    _loadLetterContent();
+  }
+
+  Future<void> _loadLetterContent() async {
+    try {
+      final response = await _apiService.readLetter(widget.letter.id);
+      
+      if (response.statusCode == 200) {
+        setState(() {
+          _content = response.data['content'];
+          _isLoading = false;
+        });
+      } else {
+        throw Exception('手紙の読み込みに失敗しました');
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('手紙の読み込みに失敗しました: $e')),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return BackgroundScaffold(
-      backgroundImage: 'assets/letter_set/${widget.letter.letterSet}.png', // 追加
+      backgroundImage: 'assets/letter_set/${widget.letter.letterSet}.png',
       appBar: AppBar(
         title: Text('手紙', style: GoogleFonts.sawarabiMincho()),
-        backgroundColor: Colors.transparent, // 追加
-        elevation: 0, // 追加
+        backgroundColor: Colors.transparent,
+        elevation: 0,
       ),
-      body: Center( // 修正: PaddingとSingleChildScrollViewをCenterに変更
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min, // 追加: 内容を中央に配置
-              crossAxisAlignment: CrossAxisAlignment.center, // 修正: 中央揃え
-              children: [
-                Text(
-                  widget.letter.content, // ダミーデータの内容を直接表示
-                  style: GoogleFonts.sawarabiMincho(fontSize: 16),
-                  textAlign: TextAlign.left, // 追加: テキストを中央揃え
+      body: Center(
+        child: _isLoading
+          ? const CircularProgressIndicator()
+          : Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      _content,
+                      style: GoogleFonts.sawarabiMincho(fontSize: 16),
+                      textAlign: TextAlign.left,
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
-          ),
-        ),
       ),
     );
   }
