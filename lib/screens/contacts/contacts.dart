@@ -55,9 +55,17 @@ class _ContactsScreenState extends State<ContactsScreen> {
     try {
       final response = await apiService.searchUser(query);
       if (response.statusCode == 200) {
-        setState(() {
-          searchResults = response.data;
-        });
+        // 自分のユーザー情報を取得
+        final meResponse = await apiService.getUserInfo();
+        if (meResponse.statusCode == 200) {
+          final myUserId = meResponse.data['id'];
+          setState(() {
+            // 検索結果から自分自身を除外
+            searchResults = (response.data as List)
+                .where((user) => user['id'] != myUserId)
+                .toList();
+          });
+        }
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
