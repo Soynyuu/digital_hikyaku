@@ -36,7 +36,7 @@ class HomeScreen extends StatelessWidget {
       MaterialPageRoute(
         builder: (context) => BackgroundScaffold(
           body: screen,
-          bottomNavigationBar: BottomBar.globalKey.currentState?.widget.bottomNavigationBar,
+          bottomNavigationBar: BottomBar(key: BottomBar.globalKey),
         ),
       ),
     );
