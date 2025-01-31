@@ -29,7 +29,7 @@ class _ContactsScreenState extends State<ContactsScreen> {
       final response = await apiService.getContacts();
       if (response.statusCode == 200) {
         setState(() {
-          contacts = jsonDecode(response.body);
+          contacts = response.data;
         });
       }
     } catch (e) {
@@ -56,7 +56,7 @@ class _ContactsScreenState extends State<ContactsScreen> {
       final response = await apiService.searchUser(query);
       if (response.statusCode == 200) {
         setState(() {
-          searchResults = jsonDecode(response.body);
+          searchResults = response.data;
         });
       }
     } catch (e) {
@@ -70,10 +70,10 @@ class _ContactsScreenState extends State<ContactsScreen> {
     try {
       final response = await apiService.createRelationship(targetId);
       if (response.statusCode == 200) {
-        await _loadContacts(); // 連絡先リストを更新
+        await _loadContacts();
         setState(() {
-          searchResults = []; // 検索結果をクリア
-          searchController.clear(); // 検索フィールドをクリア
+          searchResults = [];
+          searchController.clear();
           isSearching = false;
         });
         ScaffoldMessenger.of(context).showSnackBar(
@@ -99,13 +99,11 @@ class _ContactsScreenState extends State<ContactsScreen> {
         elevation: 0,
       ),
       body: SafeArea(
-        // SafeAreaを追加
         child: Padding(
-          // Paddingを追加してコンテンツの位置を調整
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Column(
             children: [
-              const SizedBox(height: 8.0), // 上部に少し余白を追加
+              const SizedBox(height: 8.0),
               TextField(
                 controller: searchController,
                 onChanged: _searchUser,
