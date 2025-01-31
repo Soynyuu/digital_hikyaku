@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'dart:convert'; // 追加
 import '../../widgets/background_scaffold.dart';
-import '../home/home.dart'; // HomeScreenをインポート
-import '../../models/letter.dart'; // Letterクラスをインポート
+import '../../models/letter.dart';
 import '../../services/api_service.dart';
+import '../bottombar.dart';
 
 class PostLetterScreen extends StatelessWidget {
   final String recipientId;
@@ -42,10 +41,13 @@ class PostLetterScreen extends StatelessWidget {
             actions: [
               TextButton(
                 onPressed: () {
-                  Navigator.pop(context);
-                  Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(builder: (context) => const HomeScreen()),
+                  Navigator.pop(context); // ダイアログを閉じる
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(
+                      builder: (context) => BottomBar(
+                        initialIndex: 0, // ホームタブを選択
+                      ),
+                    ),
                     (route) => false,
                   );
                 },
@@ -120,7 +122,7 @@ class PostLetterScreen extends StatelessWidget {
             Positioned(
               top: 20,
               child: Text(
-                '宛先: $recipientName',  // 表示用にrecipientNameを使用
+                '宛先: $recipientName',
                 style: GoogleFonts.sawarabiMincho(
                   fontSize: 24,
                   color: Colors.brown,

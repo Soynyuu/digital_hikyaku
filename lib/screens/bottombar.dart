@@ -7,17 +7,27 @@ import '../widgets/background_scaffold.dart';
 import 'letter_read/received_letters.dart'; // 追加: 受信手紙一覧画面をインポート
 
 class BottomBar extends StatefulWidget {
-  const BottomBar({super.key});
+  final int initialIndex;
+  
+  const BottomBar({
+    super.key,
+    this.initialIndex = 0,
+  });
 
-  static final GlobalKey<_BottomBarState> globalKey =
-      GlobalKey<_BottomBarState>();
+  static final GlobalKey<_BottomBarState> globalKey = GlobalKey<_BottomBarState>();
 
   @override
   _BottomBarState createState() => _BottomBarState();
 }
 
 class _BottomBarState extends State<BottomBar> {
-  int _selectedIndex = 0;
+  late int _selectedIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedIndex = widget.initialIndex;
+  }
 
   static List<Widget> _widgetOptions = <Widget>[
     HomeScreen(),

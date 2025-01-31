@@ -54,7 +54,8 @@ class SealedLetterScreen extends StatelessWidget {
                     height: 400,
                   ),
                 ),
-                Center( // 変更: PositionedからCenterに変更
+                Center(
+                  // 変更: PositionedからCenterに変更
                   child: Text(
                     '封を閉じるには\n手紙をタップ',
                     style: GoogleFonts.sawarabiMincho(
