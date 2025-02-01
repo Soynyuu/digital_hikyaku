@@ -20,13 +20,17 @@ app.secret_key = SECRET_KEY
 CORS(
     app,
     supports_credentials=True,
-    origins="*",  # すべてのオリジンを許可
+    origins=[
+        "https://digital-hikyaku.com",  # フロントエンドのドメイン
+        "https://digital-hikyaku.pages.dev",  # 追加
+    ],
     allow_headers=[
         "Content-Type",
         "X-Requested-With",
         "Accept",
         "Origin",
-        "Authorization"
+        "Authorization",
+        "Access-Control-Allow-Credentials",  # 追加
     ],
     expose_headers=["Set-Cookie"],
     methods=["GET", "POST", "OPTIONS"],
@@ -36,7 +40,9 @@ app.config.update(
     SESSION_COOKIE_SAMESITE="None",
     SESSION_COOKIE_SECURE=True,
     SESSION_COOKIE_HTTPONLY=True,
-    SESSION_COOKIE_DOMAIN=None,  # ドメイン制限を解除
+    SESSION_COOKIE_DOMAIN="backend.digital-hikyaku.com",  # 先頭のドットを削除
+    SESSION_COOKIE_NAME="session",  # セッションクッキーの名前を明示的に設定
+    PERMANENT_SESSION_LIFETIME=timedelta(days=30),  # セッションの有効期限を設定
 )
 
 dbpath = "database.db"
@@ -147,6 +153,9 @@ def register():
 
 @app.route("/api/login", methods=["POST"])
 def login():
+    # 既存のセッションを削除
+    session.clear()
+
     try:
         data = request.json
     except Exception as e:
@@ -195,7 +204,16 @@ def login():
 
     session.permanent = True
     session["user_id"] = row[0]
-    return jsonify({"message": "ログインに成功しました"})
+    response = jsonify({"message": "ログインに成功しました"})
+    # 既存のセッションクッキーを削除
+    response.delete_cookie(
+        'session',
+        domain='backend.digital-hikyaku.com',
+        path='/',
+        samesite='None',
+        secure=True
+    )
+    return response
 
 
 @app.route("/api/logout", methods=["POST"])
