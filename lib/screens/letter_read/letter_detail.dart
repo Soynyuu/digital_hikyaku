@@ -44,19 +44,25 @@ class _LetterDetailScreenState extends State<LetterDetailScreen> {
         errorMessage = 'サーバーエラーが発生しました';
       }
 
-      setState(() {
-        _isLoading = false;
-        _content = 'エラーが発生しました。\nしばらく待ってから再度お試しください。';
-      });
+      if (errorMessage.contains('この手紙はまだ配達中です')) {
+        setState(() {
+          _isLoading = false;
+          _content = 'この手紙はまだ配達中です。到着までお待ちください。';
+        });
+      } else {
+        setState(() {
+          _isLoading = false;
+          _content = 'エラーが発生しました。\nしばらく待ってから再度お試しください。';
+        });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(errorMessage),
-          backgroundColor: Colors.red,
-          duration: const Duration(seconds: 5),
-        ),
-      );
-
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      }
     } catch (e) {
       setState(() {
         _isLoading = false;

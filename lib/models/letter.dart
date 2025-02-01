@@ -33,10 +33,15 @@ class Letter {
       recipientId: json['recipient_id'],
       recipientName: json['recipient_name'],
       isArrived: json['is_arrived'] == 1 || json['is_arrived'] == true,
-      arriveAt: DateTime.parse(json['arrive_at']),
+      arriveAt: DateTime.parse(json['arrive_at']).toUtc(),
       readFlag: json['read_flag'] == 1 || json['read_flag'] == true,  // int値をbooleanに変換
-      createdAt: DateTime.parse(json['created_at']),
+      createdAt: DateTime.parse(json['created_at']).toUtc(),
       letterSet: json['letter_set_id'],
     );
+  }
+
+  bool isArrivedNow() {
+    final now = DateTime.now().toUtc();
+    return now.isAfter(arriveAt) || now.isAtSameMomentAs(arriveAt);
   }
 }

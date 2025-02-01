@@ -20,7 +20,7 @@ app.secret_key = SECRET_KEY
 CORS(
     app,
     supports_credentials=True,
-    origins=["http://localhost:43579"],  # 開発環境のオリジンを明示的に指定
+    origins="*",  # すべてのオリジンを許可
     allow_headers=[
         "Content-Type",
         "X-Requested-With",
@@ -592,7 +592,8 @@ def read_letter():
                 letter = DBsession.execute(
                     text("""
                         SELECT l.content, l.arrive_at, l.letter_set_id, l.recipient_id,
-                               u.name as sender_name
+                               u.name as sender_name,
+                               DATETIME('now') as current_time
                         FROM letters l
                         JOIN users u ON l.sender_id = u.id
                         WHERE l.id = :letter_id
@@ -606,18 +607,9 @@ def read_letter():
                 if letter.recipient_id != userid:
                     return jsonify({"error": "この手紙を読む権限がありません"}), 403
 
-                # 到着時刻チェック
-                try:
-                    arrive_at = datetime.strptime(letter.arrive_at, "%Y-%m-%d %H:%M:%S")
-                except ValueError:
-                    try:
-                        arrive_at = datetime.strptime(letter.arrive_at, "%Y-%m-%d %H:%M:%S.%f")
-                    except ValueError as e:
-                        app.logger.error(f"日時のパースに失敗: {e}")
-                        return jsonify({"error": "手紙の到着時刻の形式が不正です"}), 500
-
-                if arrive_at > datetime.now():
-                    return jsonify({"error": "この手紙はまだ到着していません"}), 400
+                # SQLiteのDATETIMEで直接比較
+                if letter.arrive_at > letter.current_time:
+                    return jsonify({"error": "この手紙はまだ配達中です"}), 400
 
                 # 既読フラグを更新
                 DBsession.execute(
