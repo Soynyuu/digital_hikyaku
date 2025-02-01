@@ -30,10 +30,12 @@ class SealedLetterScreen extends StatelessWidget {
       ),
       body: Center(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center, // 中央揃え
           children: [
             Stack(
+              alignment: Alignment.center, // Stack内要素を中央に配置
               children: [
+                // 画像を下層に表示
                 GestureDetector(
                   onTap: () {
                     Navigator.push(
@@ -49,19 +51,19 @@ class SealedLetterScreen extends StatelessWidget {
                     );
                   },
                   child: Image.asset(
-                    'assets/icons/close_letter.png', // 変更: 画像パスをletter.pngに変更
+                    'assets/icons/close_letter.png',
                     width: 400,
                     height: 400,
+                    fit: BoxFit.contain,
                   ),
                 ),
-                Center(
-                  // 変更: PositionedからCenterに変更
-                  child: Text(
-                    '封を閉じるには\n手紙をタップ',
-                    style: GoogleFonts.sawarabiMincho(
-                      color: Color(0xFF542E00),
-                      fontSize: 20,
-                    ),
+                // テキストを画像の上に重ねる
+                Text(
+                  '封を閉じるには\n手紙をタップ',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.sawarabiMincho(
+                    color: Color(0xFF542E00),
+                    fontSize: 20,
                   ),
                 ),
               ],

@@ -106,7 +106,6 @@ class _LetterDetailScreenState extends State<LetterDetailScreen> {
     }
 
     return BackgroundScaffold(
-      backgroundImage: 'assets/letter_set/${widget.letter.letterSet}.png',
       appBar: AppBar(
         title: Text(
           widget.letter.isArrived ? '手紙' : '配達中の手紙',
@@ -115,29 +114,48 @@ class _LetterDetailScreenState extends State<LetterDetailScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
-      body: Center(
-        child: _isLoading
-            ? const CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.brown),
-              )
-            : widget.letter.isArrived
-                ? Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: SingleChildScrollView(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Text(
-                            _content,
-                            style: GoogleFonts.sawarabiMincho(fontSize: 16),
-                            textAlign: TextAlign.left,
-                          ),
-                        ],
-                      ),
-                    ),
+      body: Stack(
+        children: [
+          // 背景画像を表示
+          Container(
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/letter_set/${widget.letter.letterSet}.png'),
+                fit: BoxFit.contain, // 画像全体を表示
+              ),
+            ),
+          ),
+          // 手紙内容の表示
+          Center(
+            child: _isLoading
+                ? const CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.brown),
                   )
-                : _buildNotArrivedMessage(),
+                : widget.letter.isArrived
+                    ? Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            maxWidth: 400 - 135, // 変更: 幅 = 400 - 135
+                          ),
+                          child: SingleChildScrollView(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Text(
+                                  _content,
+                                  style: GoogleFonts.sawarabiMincho(fontSize: 16),
+                                  textAlign: TextAlign.left, // 変更: 左揃えに統一
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      )
+                    : _buildNotArrivedMessage(),
+          ),
+        ],
       ),
     );
   }

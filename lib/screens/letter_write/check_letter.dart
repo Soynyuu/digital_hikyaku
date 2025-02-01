@@ -35,23 +35,30 @@ class CheckLetterScreen extends StatelessWidget {
             decoration: BoxDecoration(
               image: DecorationImage(
                 image: AssetImage(backgroundImage),
-                fit: BoxFit.cover,
+                fit: BoxFit.contain, // 変更: 画像全体が表示されるように
               ),
             ),
           ),
           // 手紙の内容の表示
           Align(
             alignment: Alignment.centerLeft,
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Text(
-                letterText,
-                style: GoogleFonts.sawarabiMincho(
-                  fontSize: 18,
-                  color: Colors.black,
-                  backgroundColor: Colors.white.withOpacity(0.0),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: 400 - 135, // 変更: 幅 = 400 - 135
                 ),
-                textAlign: TextAlign.left,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text(
+                    letterText,
+                    style: GoogleFonts.sawarabiMincho(
+                      fontSize: 18,
+                      color: Colors.black,
+                      backgroundColor: Colors.white.withOpacity(0.0),
+                    ),
+                    textAlign: TextAlign.left, // 変更: 左揃えに統一
+                  ),
+                ),
               ),
             ),
           ),
