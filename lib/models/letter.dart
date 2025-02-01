@@ -33,7 +33,7 @@ class Letter {
       recipientId: json['recipient_id'],
       recipientName: json['recipient_name'],
       isArrived: json['is_arrived'] == 1 || json['is_arrived'] == true,
-      arriveAt: DateTime.parse(json['arrive_at']).toUtc(),
+      arriveAt: DateTime.parse(json['arrive_at'] + 'Z').toUtc(),  // UTCとして明示的に解析
       readFlag: json['read_flag'] == 1 || json['read_flag'] == true,  // int値をbooleanに変換
       createdAt: DateTime.parse(json['created_at']).toUtc(),
       letterSet: json['letter_set_id'],
@@ -41,7 +41,12 @@ class Letter {
   }
 
   bool isArrivedNow() {
-    final now = DateTime.now().toUtc();
-    return now.isAfter(arriveAt) || now.isAtSameMomentAs(arriveAt);
+    try {
+      final now = DateTime.now().toUtc();
+      final arriveAtUtc = arriveAt.toUtc();
+      return now.difference(arriveAtUtc).inMilliseconds >= 0;
+    } catch (e) {
+      return false;
+    }
   }
 }

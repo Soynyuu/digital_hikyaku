@@ -51,6 +51,18 @@ class _ReceivedLettersScreenState extends State<ReceivedLettersScreen> {
     }
   }
 
+  String _formatArriveAt(DateTime arriveAt) {
+    final now = DateTime.now();
+    final difference = arriveAt.difference(now).inDays;
+    
+    if (difference == 0) return "今日中";
+    if (difference == 1) return "明日";
+    if (difference == 2) return "明後日";
+    if (difference <= 7) return "${difference}日後";
+    
+    return "約${(difference / 7).round()}週間後";
+  }
+
   @override
   Widget build(BuildContext context) {
     return BackgroundScaffold(
@@ -58,8 +70,6 @@ class _ReceivedLettersScreenState extends State<ReceivedLettersScreen> {
         title: Text('受信した手紙', style: GoogleFonts.sawarabiMincho()),
         backgroundColor: Colors.transparent,
         elevation: 0,
-        actions: [
-        ],
       ),
       body: RefreshIndicator(
         onRefresh: _fetchReceivedLetters,
@@ -93,7 +103,7 @@ class _ReceivedLettersScreenState extends State<ReceivedLettersScreen> {
                           style: GoogleFonts.sawarabiMincho(),
                         ),
                         if (!letter.isArrivedNow()) Text(
-                          '到着予定: ${letter.arriveAt.toLocal()}',
+                          '到着予定: ${_formatArriveAt(letter.arriveAt)}',
                           style: GoogleFonts.sawarabiMincho(
                             color: Colors.grey[600],
                             fontSize: 12,
