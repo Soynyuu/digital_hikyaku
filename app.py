@@ -20,9 +20,16 @@ app.secret_key = SECRET_KEY
 CORS(
     app,
     supports_credentials=True,
-    origins="*",  # すべてのオリジンを許可
-    allow_headers=["Content-Type"],
+    origins=["http://localhost:43579"],  # 開発環境のオリジンを明示的に指定
+    allow_headers=[
+        "Content-Type",
+        "X-Requested-With",
+        "Accept",
+        "Origin",
+        "Authorization"
+    ],
     expose_headers=["Set-Cookie"],
+    methods=["GET", "POST", "OPTIONS"],
 )
 
 app.config.update(
@@ -504,53 +511,61 @@ def receive_history():
 
     with Session(engine) as DBsession:
         try:
-            now = datetime.now()
             res = DBsession.execute(
                 text(
                     """
-                    SELECT 
-                        letters.id,
-                        letters.sender_id,
-                        letters.recipient_id,
-                        letters.arrive_at,
-                        letters.read_flag,
-                        letters.created_at,
-                        letters.letter_set_id,
-                        sender.name as sender_name,
-                        recipient.name as recipient_name
-                    FROM letters 
-                    JOIN users as sender ON letters.sender_id = sender.id
-                    JOIN users as recipient ON letters.recipient_id = recipient.id
-                    WHERE letters.recipient_id = :id
+                    SELECT
+                        id,
+                        sender_id,
+                        recipient_id,
+                        arrive_at <= :now AS is_arrived,
+                        arrive_at,
+                        read_flag,
+                        created_at,
+                        letter_set_id
+                    FROM letters
+                    WHERE recipient_id = :id
                     """
                 ),
-                {"id": userid},
+                {"id": userid, "now": datetime.now()},
             )
 
             row = res.fetchall()
+
             res = []
             for r in row:
+                sender_name = DBsession.execute(
+                    text("SELECT name, display_name FROM users WHERE id = :id"),
+                    {"id": r[1]},
+                ).fetchone()
+
+                recipient_name = DBsession.execute(
+                    text("SELECT name, display_name FROM users WHERE id = :id"),
+                    {"id": r[2]},
+                ).fetchone()
+
                 res.append(
                     {
                         "id": r[0],
                         "sender_id": r[1],
+                        "sender_name": sender_name[0],
                         "recipient_id": r[2],
-                        "arrive_at": 1 if r[3] <= now else 0,  # datetime比較の結果をint型で返す
-                        "read_flag": r[4],
-                        "created_at": r[5],
-                        "letter_set_id": r[6],
-                        "sender_name": r[7],
-                        "recipient_name": r[8],
+                        "recipient_name": recipient_name[0],
+                        "is_arrived": r[3],
+                        "arrive_at": r[4],
+                        "read_flag": r[5],
+                        "created_at": r[6],
+                        "letter_set_id": r[7],
                     }
                 )
-
-            return jsonify(res)
 
         except Exception as e:
             app.logger.exception(e)
             return jsonify({"error": "内部エラーが発生しました"}), 500
         finally:
             DBsession.close()
+
+    return jsonify(res)
 
 
 @app.route("/api/letter/read", methods=["POST"])

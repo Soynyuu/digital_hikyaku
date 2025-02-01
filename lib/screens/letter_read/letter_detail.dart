@@ -17,7 +17,7 @@ class LetterDetailScreen extends StatefulWidget {
 class _LetterDetailScreenState extends State<LetterDetailScreen> {
   final ApiService _apiService = ApiService();
   bool _isLoading = true;
-  String _content = '';
+  String? _content; // nullの場合「未開封」を表示
 
   @override
   void initState() {
@@ -26,31 +26,6 @@ class _LetterDetailScreenState extends State<LetterDetailScreen> {
   }
 
   Future<void> _loadLetterContent() async {
-    if (!widget.letter.isArrived) {
-      setState(() {
-        _isLoading = false;
-      });
-      
-      final now = DateTime.now();
-      final remainingTime = widget.letter.arriveAt.difference(now);
-      final hours = remainingTime.inHours;
-      final minutes = remainingTime.inMinutes % 60;
-      
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            '手紙はまだ到着していません。\n到着まであと約$hours時間$minutes分です',
-            style: GoogleFonts.sawarabiGothic(),
-          ),
-          duration: const Duration(seconds: 5),
-          backgroundColor: Colors.brown,
-        ),
-      );
-      
-      Navigator.pop(context);
-      return;
-    }
-
     try {
       final response = await _apiService.readLetter(widget.letter.id);
       
@@ -59,56 +34,51 @@ class _LetterDetailScreenState extends State<LetterDetailScreen> {
           _content = response.data['content'];
           _isLoading = false;
         });
-      } else {
-        throw Exception(response.data['error'] ?? '手紙の読み込みに失敗しました');
+        return;
       }
+
+      String errorMessage;
+      if (response.data is Map) {
+        errorMessage = response.data['error'] ?? '不明なエラーが発生しました';
+      } else {
+        errorMessage = 'サーバーエラーが発生しました';
+      }
+
+      setState(() {
+        _isLoading = false;
+        _content = 'エラーが発生しました。\nしばらく待ってから再度お試しください。';
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(errorMessage),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 5),
+        ),
+      );
+
     } catch (e) {
       setState(() {
         _isLoading = false;
+        _content = 'エラーが発生しました。\nしばらく待ってから再度お試しください。';
       });
+      
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('手紙の読み込みに失敗しました: $e'),
+          content: Text('エラーが発生しました: $e'),
           backgroundColor: Colors.red,
+          duration: const Duration(seconds: 5),
         ),
       );
-      Navigator.pop(context);
     }
-  }
-
-  String _formatDuration(Duration duration) {
-    final hours = duration.inHours;
-    final minutes = duration.inMinutes % 60;
-    return '約$hours時間$minutes分';
   }
 
   @override
   Widget build(BuildContext context) {
-    final now = DateTime.now();
-    if (!widget.letter.isArrived) {
-      final remainingTime = widget.letter.arriveAt.difference(now);
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              '配達中...',
-              style: GoogleFonts.sawarabiMincho(fontSize: 24),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              '到着まであと${_formatDuration(remainingTime)}',
-              style: GoogleFonts.sawarabiMincho(fontSize: 18),
-            ),
-          ],
-        ),
-      );
-    }
-
     return BackgroundScaffold(
       appBar: AppBar(
         title: Text(
-          widget.letter.isArrived ? '手紙' : '配達中の手紙',
+          '手紙',
           style: GoogleFonts.sawarabiMincho(),
         ),
         backgroundColor: Colors.transparent,
@@ -116,12 +86,12 @@ class _LetterDetailScreenState extends State<LetterDetailScreen> {
       ),
       body: Stack(
         children: [
-          // 背景画像を表示
+          // 背景画像
           Container(
             decoration: BoxDecoration(
               image: DecorationImage(
                 image: AssetImage('assets/letter_set/${widget.letter.letterSet}.png'),
-                fit: BoxFit.contain, // 画像全体を表示
+                fit: BoxFit.contain,
               ),
             ),
           ),
@@ -131,66 +101,24 @@ class _LetterDetailScreenState extends State<LetterDetailScreen> {
                 ? const CircularProgressIndicator(
                     valueColor: AlwaysStoppedAnimation<Color>(Colors.brown),
                   )
-                : widget.letter.isArrived
-                    ? Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: ConstrainedBox(
-                          constraints: BoxConstraints(
-                            maxWidth: 400 - 135, // 変更: 幅 = 400 - 135
-                          ),
-                          child: SingleChildScrollView(
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Text(
-                                  _content,
-                                  style: GoogleFonts.sawarabiMincho(fontSize: 16),
-                                  textAlign: TextAlign.left, // 変更: 左揃えに統一
-                                ),
-                              ],
-                            ),
-                          ),
+                : Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(
+                        maxWidth: 400 - 135,
+                      ),
+                      child: SingleChildScrollView(
+                        child: Text(
+                          _content ?? '',
+                          style: GoogleFonts.sawarabiMincho(fontSize: 16),
+                          textAlign: TextAlign.left,
                         ),
-                      )
-                    : _buildNotArrivedMessage(),
+                      ),
+                    ),
+                  ),
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildNotArrivedMessage() {
-    final now = DateTime.now();
-    final remainingTime = widget.letter.arriveAt.difference(now);
-    final hours = remainingTime.inHours;
-    final minutes = remainingTime.inMinutes % 60;
-
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(
-          Icons.schedule,
-          size: 64,
-          color: Colors.brown.shade300,
-        ),
-        const SizedBox(height: 16),
-        Text(
-          '手紙はまだ配達中です',
-          style: GoogleFonts.sawarabiMincho(
-            fontSize: 20,
-            color: Colors.brown.shade700,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          '到着まであと約$hours時間$minutes分',
-          style: GoogleFonts.sawarabiMincho(
-            fontSize: 16,
-            color: Colors.brown.shade600,
-          ),
-        ),
-      ],
     );
   }
 }
