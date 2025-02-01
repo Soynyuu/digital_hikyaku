@@ -8,48 +8,47 @@ class LetterWriteScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BackgroundScaffold(
+    return Scaffold(
       appBar: AppBar(
-        title: Text(
-          '手紙を書く',
-          style: GoogleFonts.sawarabiMincho(),
-        ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
+        title: const Text('手紙を書く'),
+        backgroundColor: Colors.transparent, // 追加: トップバーを透明に
+        elevation: 0, // 追加: 影を消す
       ),
-      body: Center(
-        child: TextButton(
-          style: ButtonStyle(
-            overlayColor: MaterialStateProperty.all(Colors.transparent),
-          ),
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const SelectRecipientScreen(),
+      body: Container(
+        child: Center(
+          child: TextButton(
+            style: ButtonStyle(
+              overlayColor: MaterialStateProperty.all(Colors.transparent),
+            ),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const SelectRecipientScreen(),
+                ),
+              );
+            },
+            child: RichText(
+              text: TextSpan(
+                children: [
+                  TextSpan(
+                    text: "手紙\nを",
+                    style: GoogleFonts.sawarabiMincho(
+                      fontSize: 30,
+                      color: Color(0xFF8F8F8F),
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
+                  TextSpan(
+                    text: "\n書く",
+                    style: GoogleFonts.sawarabiMincho(
+                      fontSize: 36,
+                      color: Color(0xFF542E00),
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
+                ],
               ),
-            );
-          },
-          child: RichText(
-            text: TextSpan(
-              children: [
-                TextSpan(
-                  text: "手紙\nを",
-                  style: GoogleFonts.sawarabiMincho(
-                    fontSize: 30,
-                    color: Color(0xFF8F8F8F),
-                    decoration: TextDecoration.underline,
-                  ),
-                ),
-                TextSpan(
-                  text: "\n書く",
-                  style: GoogleFonts.sawarabiMincho(
-                    fontSize: 36,
-                    color: Color(0xFF542E00),
-                    decoration: TextDecoration.underline,
-                  ),
-                ),
-              ],
             ),
           ),
         ),

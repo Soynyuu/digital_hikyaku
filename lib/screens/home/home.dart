@@ -11,9 +11,11 @@ class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   void _navigateToScreen(BuildContext context, int index) {
-    // 対応する画面を取得
     Widget screen;
     switch (index) {
+      case 0:
+        screen = const HomeScreen();
+        break;
       case 1:
         screen = const ReceivedLettersScreen();
         break;
@@ -29,20 +31,15 @@ class HomeScreen extends StatelessWidget {
       default:
         return;
     }
-
-    // まず画面遷移を実行
-    Navigator.push(
+    Navigator.pushReplacement(
       context,
       MaterialPageRoute(
         builder: (context) => BackgroundScaffold(
           body: screen,
-          bottomNavigationBar: BottomBar(key: BottomBar.globalKey),
+          bottomNavigationBar: BottomBar(initialIndex: index),
         ),
       ),
     );
-
-    // その後でBottomBarのタブを更新
-    BottomBar.globalKey.currentState?.selectTab(index);
   }
 
   Widget _buildMenuCard(
