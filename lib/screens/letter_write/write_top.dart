@@ -9,11 +9,6 @@ class LetterWriteScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('手紙を書く'),
-        backgroundColor: Colors.transparent, // 追加: トップバーを透明に
-        elevation: 0, // 追加: 影を消す
-      ),
       body: Container(
         child: Center(
           child: TextButton(
