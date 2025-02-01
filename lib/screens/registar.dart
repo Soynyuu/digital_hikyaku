@@ -110,7 +110,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             children: [
               TextField(
                 controller: _nameController,
-                decoration: const InputDecoration(labelText: 'ユーザー名'),
+                decoration: const InputDecoration(labelText: 'ユーザーID'),
               ),
               TextField(
                 controller: _displayNameController,
