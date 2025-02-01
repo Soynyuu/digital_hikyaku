@@ -10,11 +10,12 @@ class WalkHistoryScreen extends StatefulWidget {
   _WalkHistoryScreenState createState() => _WalkHistoryScreenState();
 }
 
-class _WalkHistoryScreenState extends State<WalkHistoryScreen> with SingleTickerProviderStateMixin {
+class _WalkHistoryScreenState extends State<WalkHistoryScreen>
+    with SingleTickerProviderStateMixin {
   final ApiService _apiService = ApiService();
   List<Map<String, dynamic>> letters = [];
   late AnimationController _controller;
-  
+
   @override
   void initState() {
     super.initState();
@@ -45,15 +46,15 @@ class _WalkHistoryScreenState extends State<WalkHistoryScreen> with SingleTicker
   }
 
   double _calculateProgress(String createAt, String arriveAt) {
-    final now = DateTime.now();
+    final now = DateTime.now().toUtc(); // 現在時刻をUTCで取得
     final created = DateTime.parse(createAt);
     final arrival = DateTime.parse(arriveAt);
 
     if (now.isAfter(arrival)) return 1.0;
-    
+
     final totalDuration = arrival.difference(created).inSeconds;
     final currentDuration = now.difference(created).inSeconds;
-    
+
     return currentDuration / totalDuration;
   }
 
@@ -100,110 +101,136 @@ class _WalkHistoryScreenState extends State<WalkHistoryScreen> with SingleTicker
         ),
       ),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.only(
-            top: 8.0,
-            left: 16.0,
-            right: 16.0,
-            bottom: 16.0,
-          ),
-          child: RefreshIndicator(
-            onRefresh: _loadLetters,
-            child: letters.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.mail_outline,
-                          size: 64,
-                          color: Colors.brown.shade200,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 800),
+            child: Padding(
+              padding: const EdgeInsets.only(
+                top: 8.0,
+                left: 16.0,
+                right: 16.0,
+                bottom: 16.0,
+              ),
+              child: RefreshIndicator(
+                onRefresh: _loadLetters,
+                child: letters.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.mail_outline,
+                              size: 64,
+                              color: Colors.brown.shade200,
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              '送信した手紙はありません',
+                              style: GoogleFonts.sawarabiGothic(
+                                fontSize: 16,
+                                color: Colors.brown.shade700,
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 16),
-                        Text(
-                          '送信した手紙はありません',
-                          style: GoogleFonts.sawarabiGothic(
-                            fontSize: 16,
-                            color: Colors.brown.shade700,
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                : ListView.builder(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    itemCount: letters.length,
-                    itemBuilder: (context, index) {
-                      final letter = letters[index];
-                      final progress = _calculateProgress(
-                        letter['created_at'],
-                        letter['arrive_at'],
-                      );
+                      )
+                    : ListView.builder(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        itemCount: letters.length,
+                        itemBuilder: (context, index) {
+                          final letter = letters[index];
+                          final progress = _calculateProgress(
+                            letter['created_at'],
+                            letter['arrive_at'],
+                          );
 
-                      return Card(
-                        elevation: 4,
-                        shadowColor: Colors.brown.withOpacity(0.2),
-                        margin: const EdgeInsets.only(bottom: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          side: BorderSide(color: Colors.brown.shade200, width: 0.5),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          return Card(
+                            elevation: 4,
+                            shadowColor: Colors.brown.withOpacity(0.2),
+                            margin: const EdgeInsets.only(bottom: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              side: BorderSide(
+                                  color: Colors.brown.shade200, width: 0.5),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  _buildDeliveryStatus(progress),
-                                  Text(
-                                    'レターセット: ${letter['letter_set_id']}',
-                                    style: GoogleFonts.sawarabiGothic(
-                                      fontSize: 12,
-                                      color: Colors.brown.shade600,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 16),
-                              AnimatedBuilder(
-                                animation: _controller,
-                                builder: (context, child) {
-                                  return ClipRRect(
-                                    borderRadius: BorderRadius.circular(8),
-                                    child: LinearProgressIndicator(
-                                      value: progress,
-                                      backgroundColor: Colors.brown.shade50,
-                                      valueColor: AlwaysStoppedAnimation<Color>(
-                                        progress >= 1.0
-                                            ? Colors.green.shade300
-                                            : Colors.brown.shade300,
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      _buildDeliveryStatus(progress),
+                                      Text(
+                                        'To: ${letter['recipient_name']}',
+                                        style: GoogleFonts.sawarabiGothic(
+                                          fontSize: 14,
+                                          color: Colors.brown.shade800,
+                                          fontWeight: FontWeight.w600,
+                                        ),
                                       ),
-                                      minHeight: 8,
-                                    ),
-                                  );
-                                },
-                              ),
-                              const SizedBox(height: 16),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  _buildDateInfo('発送', letter['created_at']),
-                                  Icon(
-                                    Icons.arrow_forward,
-                                    size: 16,
-                                    color: Colors.brown.shade300,
+                                    ],
                                   ),
-                                  _buildDateInfo('到着予定', letter['arrive_at']),
+                                  const SizedBox(height: 12),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        'レターセット: ${letter['letter_set_id']}',
+                                        style: GoogleFonts.sawarabiGothic(
+                                          fontSize: 12,
+                                          color: Colors.brown.shade600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 16),
+                                  AnimatedBuilder(
+                                    animation: _controller,
+                                    builder: (context, child) {
+                                      return ClipRRect(
+                                        borderRadius: BorderRadius.circular(8),
+                                        child: LinearProgressIndicator(
+                                          value: progress,
+                                          backgroundColor: Colors.brown.shade50,
+                                          valueColor:
+                                              AlwaysStoppedAnimation<Color>(
+                                            progress >= 1.0
+                                                ? Colors.green.shade300
+                                                : Colors.brown.shade300,
+                                          ),
+                                          minHeight: 8,
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      _buildDateInfo(
+                                          '発送', letter['created_at']),
+                                      Icon(
+                                        Icons.arrow_forward,
+                                        size: 16,
+                                        color: Colors.brown.shade300,
+                                      ),
+                                      _buildDateInfo(
+                                          '到着予定', letter['arrive_at']),
+                                    ],
+                                  ),
                                 ],
                               ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
+                            ),
+                          );
+                        },
+                      ),
+              ),
+            ),
           ),
         ),
       ),
