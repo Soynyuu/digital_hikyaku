@@ -576,49 +576,70 @@ def read_letter():
 
     try:
         data = request.json
-    except Exception as e:
-        app.logger.exception(e)
-        return jsonify({"error": "リクエストが不正です"}), 400
-
-    try:
+        if not data:
+            return jsonify({"error": "リクエストデータが空です"}), 400
+            
         letter_id = data.get("letter_id")
+        if not letter_id:
+            return jsonify({"error": "letter_idが指定されていません"}), 400
+
+        if not isinstance(letter_id, str):
+            return jsonify({"error": "letter_idは文字列である必要があります"}), 400
+
+        with Session(engine) as DBsession:
+            try:
+                # 手紙の存在確認とアクセス権限の確認
+                letter = DBsession.execute(
+                    text("""
+                        SELECT l.content, l.arrive_at, l.letter_set_id, l.recipient_id,
+                               u.name as sender_name
+                        FROM letters l
+                        JOIN users u ON l.sender_id = u.id
+                        WHERE l.id = :letter_id
+                    """),
+                    {"letter_id": letter_id}
+                ).fetchone()
+
+                if letter is None:
+                    return jsonify({"error": "指定された手紙が存在しません"}), 404
+
+                if letter.recipient_id != userid:
+                    return jsonify({"error": "この手紙を読む権限がありません"}), 403
+
+                # 到着時刻チェック
+                try:
+                    arrive_at = datetime.strptime(letter.arrive_at, "%Y-%m-%d %H:%M:%S")
+                except ValueError:
+                    try:
+                        arrive_at = datetime.strptime(letter.arrive_at, "%Y-%m-%d %H:%M:%S.%f")
+                    except ValueError as e:
+                        app.logger.error(f"日時のパースに失敗: {e}")
+                        return jsonify({"error": "手紙の到着時刻の形式が不正です"}), 500
+
+                if arrive_at > datetime.now():
+                    return jsonify({"error": "この手紙はまだ到着していません"}), 400
+
+                # 既読フラグを更新
+                DBsession.execute(
+                    text("UPDATE letters SET read_flag = 1 WHERE id = :id"),
+                    {"id": letter_id}
+                )
+
+                DBsession.commit()
+                return jsonify({
+                    "content": letter.content,
+                    "letter_set_id": letter.letter_set_id,
+                    "sender_name": letter.sender_name
+                })
+
+            except Exception as e:
+                DBsession.rollback()
+                app.logger.exception(f"手紙の読み取り中にエラーが発生: {str(e)}")
+                return jsonify({"error": f"内部エラーが発生しました: {str(e)}"}), 500
+
     except Exception as e:
-        app.logger.exception(e)
-        return jsonify({"error": "リクエストが不正です"}), 400
-
-    if not isinstance(letter_id, str):
-        return jsonify({"error": "メッセージ ID は文字列である必要があります"}), 400
-
-    with Session(engine) as DBsession:
-        try:
-            res = DBsession.execute(
-                text(
-                    "SELECT content, arrive_at, letter_set_id FROM letters WHERE id = :id AND recipient_id = :user_id"
-                ),
-                {"id": letter_id, "user_id": userid},
-            )
-            res = res.fetchone()
-            if res is None:
-                return jsonify({"error": "メッセージが存在しません"}), 400
-
-            DBsession.execute(
-                text("UPDATE letters SET read_flag = 1 WHERE id = :id"),
-                {"id": letter_id},
-            )
-
-            DBsession.commit()
-        except Exception as e:
-            DBsession.rollback()
-            app.logger.exception(e)
-            return jsonify({"error": "内部エラーが発生しました"}), 500
-        finally:
-            DBsession.close()
-
-    arrive_at = datetime.strptime(res[1], "%Y-%m-%d %H:%M:%S.%f")
-    if arrive_at > datetime.now():
-        return jsonify({"error": "メッセージはまだ開封できません"}), 400
-
-    return jsonify({"content": res[0], "letter_set_id": res[2]})
+        app.logger.exception(f"予期しないエラーが発生: {str(e)}")
+        return jsonify({"error": "予期しないエラーが発生しました"}), 500
 
 
 if __name__ == "__main__":
