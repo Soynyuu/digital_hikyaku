@@ -39,12 +39,14 @@ class CheckLetterScreen extends StatelessWidget {
               ),
             ),
           ),
-          // 手紙の内容の表示（PCでも窓が広がりすぎないように制限）
+          // 手紙の内容の表示
           Align(
             alignment: Alignment.centerLeft,
             child: Center(
               child: ConstrainedBox(
-                constraints: BoxConstraints(maxWidth: 600), // 追加: 最大横幅制限
+                constraints: BoxConstraints(
+                  maxWidth: 400 - 135, // 変更: 幅 = 400 - 135
+                ),
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Text(
@@ -54,7 +56,7 @@ class CheckLetterScreen extends StatelessWidget {
                       color: Colors.black,
                       backgroundColor: Colors.white.withOpacity(0.0),
                     ),
-                    textAlign: TextAlign.left,
+                    textAlign: TextAlign.left, // 変更: 左揃えに統一
                   ),
                 ),
               ),

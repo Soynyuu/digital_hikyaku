@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../widgets/background_scaffold.dart';
 import 'check_letter.dart';
 
 class EditLetterScreen extends StatefulWidget {
@@ -23,26 +24,35 @@ class _EditLetterScreenState extends State<EditLetterScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return BackgroundScaffold(
+      appBar: AppBar(
+        title: Text('手紙を書く', style: GoogleFonts.sawarabiMincho()),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
       body: Stack(
         children: [
+          // 背景画像を表示
           Container(
             decoration: BoxDecoration(
               image: DecorationImage(
                 image: AssetImage(widget.backgroundImage),
-                fit: BoxFit.contain, // 変更: 画像全体が表示されるように
+                fit: BoxFit.contain, // 背景画像全体を表示
               ),
             ),
           ),
+          // 入力領域
           Center(
             child: ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: 400), // 変更: 横幅を400に短縮
+              constraints: BoxConstraints(
+                maxWidth: 400 - 135, // 変更: 幅 = 400 - 135
+              ),
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: TextField(
                   controller: _textController,
                   maxLines: null,
-                  textAlign: TextAlign.center, // 追加: テキストを中央揃え
+                  textAlign: TextAlign.left, // 左揃え
                   decoration: InputDecoration(
                     hintText: 'ここに手紙を書いてください',
                     border: InputBorder.none,
@@ -54,12 +64,13 @@ class _EditLetterScreenState extends State<EditLetterScreen> {
               ),
             ),
           ),
+          // 下部のボタン
           Positioned(
             bottom: 20,
             left: 16,
             right: 16,
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 ElevatedButton(
                   onPressed: () {
