@@ -51,6 +51,18 @@ class _ReceivedLettersScreenState extends State<ReceivedLettersScreen> {
     }
   }
 
+  String _formatArriveAt(DateTime arriveAt) {
+    final now = DateTime.now();
+    final difference = arriveAt.difference(now).inDays;
+    
+    if (difference == 0) return "今日中";
+    if (difference == 1) return "明日";
+    if (difference == 2) return "明後日";
+    if (difference <= 7) return "${difference}日後";
+    
+    return "約${(difference / 7).round()}週間後";
+  }
+
   @override
   Widget build(BuildContext context) {
     return BackgroundScaffold(
@@ -58,8 +70,6 @@ class _ReceivedLettersScreenState extends State<ReceivedLettersScreen> {
         title: Text('受信した手紙', style: GoogleFonts.sawarabiMincho()),
         backgroundColor: Colors.transparent,
         elevation: 0,
-        actions: [
-        ],
       ),
       body: RefreshIndicator(
         onRefresh: _fetchReceivedLetters,
@@ -74,23 +84,48 @@ class _ReceivedLettersScreenState extends State<ReceivedLettersScreen> {
               itemCount: _letters.length,
               itemBuilder: (context, index) {
                 final letter = _letters[index];
+                String letterStatus = letter.isArrivedNow()
+                  ? (letter.readFlag ? '既読の手紙' : '届いた手紙')
+                  : '配達中の手紙';
+                
                 return Card(
                   margin: const EdgeInsets.all(8),
                   child: ListTile(
                     title: Text(
-                      letter.isArrived ? '届いた手紙' : '配達中の手紙',
+                      letterStatus,
                       style: GoogleFonts.sawarabiMincho(),
                     ),
-                    subtitle: Text(
-                      '送信者: ${letter.senderName}',
-                      style: GoogleFonts.sawarabiMincho(),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '送信者: ${letter.senderName}',
+                          style: GoogleFonts.sawarabiMincho(),
+                        ),
+                        if (!letter.isArrivedNow()) Text(
+                          '到着予定: ${_formatArriveAt(letter.arriveAt)}',
+                          style: GoogleFonts.sawarabiMincho(
+                            color: Colors.grey[600],
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
                     ),
                     trailing: letter.readFlag 
                       ? const Icon(Icons.mark_email_read)
-                      : letter.isArrived 
+                      : letter.isArrivedNow()
                           ? const Icon(Icons.mail)
                           : const Icon(Icons.schedule),
                     onTap: () {
+                      if (!letter.isArrivedNow()) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('この手紙はまだ配達中です。到着までお待ちください。'),
+                            duration: Duration(seconds: 2),
+                          ),
+                        );
+                        return;
+                      }
                       Navigator.push(
                         context,
                         MaterialPageRoute(

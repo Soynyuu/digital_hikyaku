@@ -1,15 +1,16 @@
+import 'package:intl/intl.dart';
+
 class Letter {
   final String id;
   final String senderId;
   final String senderName;
   final String recipientId;
   final String recipientName;
+  final bool isArrived;
+  final DateTime arriveAt;
+  final bool readFlag;  // int -> bool に変更
+  final DateTime createdAt;
   final String letterSet;
-  final String content;
-  final bool isArrived;  // arrive_atの比較結果
-  final DateTime arriveAt;  // 到着予定時刻
-  final bool readFlag;
-  final String createdAt;
 
   Letter({
     required this.id,
@@ -17,12 +18,11 @@ class Letter {
     required this.senderName,
     required this.recipientId,
     required this.recipientName,
-    required this.letterSet,
-    required this.content,
     required this.isArrived,
     required this.arriveAt,
     required this.readFlag,
     required this.createdAt,
+    required this.letterSet,
   });
 
   factory Letter.fromJson(Map<String, dynamic> json) {
@@ -32,12 +32,21 @@ class Letter {
       senderName: json['sender_name'],
       recipientId: json['recipient_id'],
       recipientName: json['recipient_name'],
+      isArrived: json['is_arrived'] == 1 || json['is_arrived'] == true,
+      arriveAt: DateTime.parse(json['arrive_at'] + 'Z').toUtc(),  // UTCとして明示的に解析
+      readFlag: json['read_flag'] == 1 || json['read_flag'] == true,  // int値をbooleanに変換
+      createdAt: DateTime.parse(json['created_at']).toUtc(),
       letterSet: json['letter_set_id'],
-      content: json['content'] ?? '',
-      isArrived: json['arrive_at'] == 1,
-      arriveAt: DateTime.parse(json['read_flag']),  // read_flagに到着予定時刻が入っている
-      readFlag: json['created_at'] == 1,  // created_atにread_flagが入っている
-      createdAt: json['letter_set_id'],  // letter_set_idにcreated_atが入っている
     );
+  }
+
+  bool isArrivedNow() {
+    try {
+      final now = DateTime.now().toUtc();
+      final arriveAtUtc = arriveAt.toUtc();
+      return now.difference(arriveAtUtc).inMilliseconds >= 0;
+    } catch (e) {
+      return false;
+    }
   }
 }

@@ -21,8 +21,15 @@ CORS(
     app,
     supports_credentials=True,
     origins="*",  # すべてのオリジンを許可
-    allow_headers=["Content-Type"],
+    allow_headers=[
+        "Content-Type",
+        "X-Requested-With",
+        "Accept",
+        "Origin",
+        "Authorization"
+    ],
     expose_headers=["Set-Cookie"],
+    methods=["GET", "POST", "OPTIONS"],
 )
 
 app.config.update(
@@ -504,53 +511,61 @@ def receive_history():
 
     with Session(engine) as DBsession:
         try:
-            now = datetime.now()
             res = DBsession.execute(
                 text(
                     """
-                    SELECT 
-                        letters.id,
-                        letters.sender_id,
-                        letters.recipient_id,
-                        letters.arrive_at,
-                        letters.read_flag,
-                        letters.created_at,
-                        letters.letter_set_id,
-                        sender.name as sender_name,
-                        recipient.name as recipient_name
-                    FROM letters 
-                    JOIN users as sender ON letters.sender_id = sender.id
-                    JOIN users as recipient ON letters.recipient_id = recipient.id
-                    WHERE letters.recipient_id = :id
+                    SELECT
+                        id,
+                        sender_id,
+                        recipient_id,
+                        arrive_at <= :now AS is_arrived,
+                        arrive_at,
+                        read_flag,
+                        created_at,
+                        letter_set_id
+                    FROM letters
+                    WHERE recipient_id = :id
                     """
                 ),
-                {"id": userid},
+                {"id": userid, "now": datetime.now()},
             )
 
             row = res.fetchall()
+
             res = []
             for r in row:
+                sender_name = DBsession.execute(
+                    text("SELECT name, display_name FROM users WHERE id = :id"),
+                    {"id": r[1]},
+                ).fetchone()
+
+                recipient_name = DBsession.execute(
+                    text("SELECT name, display_name FROM users WHERE id = :id"),
+                    {"id": r[2]},
+                ).fetchone()
+
                 res.append(
                     {
                         "id": r[0],
                         "sender_id": r[1],
+                        "sender_name": sender_name[0],
                         "recipient_id": r[2],
-                        "arrive_at": 1 if r[3] <= now else 0,  # datetime比較の結果をint型で返す
-                        "read_flag": r[4],
-                        "created_at": r[5],
-                        "letter_set_id": r[6],
-                        "sender_name": r[7],
-                        "recipient_name": r[8],
+                        "recipient_name": recipient_name[0],
+                        "is_arrived": r[3],
+                        "arrive_at": r[4],
+                        "read_flag": r[5],
+                        "created_at": r[6],
+                        "letter_set_id": r[7],
                     }
                 )
-
-            return jsonify(res)
 
         except Exception as e:
             app.logger.exception(e)
             return jsonify({"error": "内部エラーが発生しました"}), 500
         finally:
             DBsession.close()
+
+    return jsonify(res)
 
 
 @app.route("/api/letter/read", methods=["POST"])
@@ -561,49 +576,62 @@ def read_letter():
 
     try:
         data = request.json
-    except Exception as e:
-        app.logger.exception(e)
-        return jsonify({"error": "リクエストが不正です"}), 400
-
-    try:
+        if not data:
+            return jsonify({"error": "リクエストデータが空です"}), 400
+            
         letter_id = data.get("letter_id")
+        if not letter_id:
+            return jsonify({"error": "letter_idが指定されていません"}), 400
+
+        if not isinstance(letter_id, str):
+            return jsonify({"error": "letter_idは文字列である必要があります"}), 400
+
+        with Session(engine) as DBsession:
+            try:
+                # 手紙の存在確認とアクセス権限の確認
+                letter = DBsession.execute(
+                    text("""
+                        SELECT l.content, l.arrive_at, l.letter_set_id, l.recipient_id,
+                               u.name as sender_name,
+                               DATETIME('now') as current_time
+                        FROM letters l
+                        JOIN users u ON l.sender_id = u.id
+                        WHERE l.id = :letter_id
+                    """),
+                    {"letter_id": letter_id}
+                ).fetchone()
+
+                if letter is None:
+                    return jsonify({"error": "指定された手紙が存在しません"}), 404
+
+                if letter.recipient_id != userid:
+                    return jsonify({"error": "この手紙を読む権限がありません"}), 403
+
+                # SQLiteのDATETIMEで直接比較
+                if letter.arrive_at > letter.current_time:
+                    return jsonify({"error": "この手紙はまだ配達中です"}), 400
+
+                # 既読フラグを更新
+                DBsession.execute(
+                    text("UPDATE letters SET read_flag = 1 WHERE id = :id"),
+                    {"id": letter_id}
+                )
+
+                DBsession.commit()
+                return jsonify({
+                    "content": letter.content,
+                    "letter_set_id": letter.letter_set_id,
+                    "sender_name": letter.sender_name
+                })
+
+            except Exception as e:
+                DBsession.rollback()
+                app.logger.exception(f"手紙の読み取り中にエラーが発生: {str(e)}")
+                return jsonify({"error": f"内部エラーが発生しました: {str(e)}"}), 500
+
     except Exception as e:
-        app.logger.exception(e)
-        return jsonify({"error": "リクエストが不正です"}), 400
-
-    if not isinstance(letter_id, str):
-        return jsonify({"error": "メッセージ ID は文字列である必要があります"}), 400
-
-    with Session(engine) as DBsession:
-        try:
-            res = DBsession.execute(
-                text(
-                    "SELECT content, arrive_at, letter_set_id FROM letters WHERE id = :id AND recipient_id = :user_id"
-                ),
-                {"id": letter_id, "user_id": userid},
-            )
-            res = res.fetchone()
-            if res is None:
-                return jsonify({"error": "メッセージが存在しません"}), 400
-
-            DBsession.execute(
-                text("UPDATE letters SET read_flag = 1 WHERE id = :id"),
-                {"id": letter_id},
-            )
-
-            DBsession.commit()
-        except Exception as e:
-            DBsession.rollback()
-            app.logger.exception(e)
-            return jsonify({"error": "内部エラーが発生しました"}), 500
-        finally:
-            DBsession.close()
-
-    arrive_at = datetime.strptime(res[1], "%Y-%m-%d %H:%M:%S.%f")
-    if arrive_at > datetime.now():
-        return jsonify({"error": "メッセージはまだ開封できません"}), 400
-
-    return jsonify({"content": res[0], "letter_set_id": res[2]})
+        app.logger.exception(f"予期しないエラーが発生: {str(e)}")
+        return jsonify({"error": "予期しないエラーが発生しました"}), 500
 
 
 if __name__ == "__main__":
