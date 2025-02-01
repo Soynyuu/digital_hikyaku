@@ -30,9 +30,10 @@ class SealedLetterScreen extends StatelessWidget {
       ),
       body: Center(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center, // 中央揃え追加
           children: [
             Stack(
+              alignment: Alignment.center, // Stack内要素を中央に配置
               children: [
                 GestureDetector(
                   onTap: () {
@@ -55,14 +56,12 @@ class SealedLetterScreen extends StatelessWidget {
                     fit: BoxFit.contain,
                   ),
                 ),
-                Center(
-                  // 変更: PositionedからCenterに変更
-                  child: Text(
-                    '封を閉じるには\n手紙をタップ',
-                    style: GoogleFonts.sawarabiMincho(
-                      color: Color(0xFF542E00),
-                      fontSize: 20,
-                    ),
+                Text(
+                  '封を閉じるには\n手紙をタップ',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.sawarabiMincho(
+                    color: Color(0xFF542E00),
+                    fontSize: 20,
                   ),
                 ),
               ],
