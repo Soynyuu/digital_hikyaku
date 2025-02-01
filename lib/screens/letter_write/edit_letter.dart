@@ -30,23 +30,27 @@ class _EditLetterScreenState extends State<EditLetterScreen> {
             decoration: BoxDecoration(
               image: DecorationImage(
                 image: AssetImage(widget.backgroundImage),
-                fit: BoxFit.cover,
+                fit: BoxFit.contain, // 変更: 画像全体が表示されるように
               ),
             ),
           ),
           Center(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: TextField(
-                controller: _textController,
-                maxLines: null,
-                decoration: InputDecoration(
-                  hintText: 'ここに手紙を書いてください',
-                  border: InputBorder.none,
-                  filled: true,
-                  fillColor: Colors.white.withOpacity(0.0),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: 400), // 変更: 横幅を400に短縮
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: TextField(
+                  controller: _textController,
+                  maxLines: null,
+                  textAlign: TextAlign.center, // 追加: テキストを中央揃え
+                  decoration: InputDecoration(
+                    hintText: 'ここに手紙を書いてください',
+                    border: InputBorder.none,
+                    filled: true,
+                    fillColor: Colors.white.withOpacity(0.0),
+                  ),
+                  style: GoogleFonts.sawarabiMincho(fontSize: 18),
                 ),
-                style: GoogleFonts.sawarabiMincho(fontSize: 18),
               ),
             ),
           ),

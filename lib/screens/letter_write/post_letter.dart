@@ -117,6 +117,7 @@ class PostLetterScreen extends StatelessWidget {
                 'assets/icons/letter.png',
                 width: 600,
                 height: 600,
+                fit: BoxFit.contain, // 追加: 画像全体が表示されるように
               ),
             ),
             Positioned(
