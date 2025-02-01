@@ -204,16 +204,9 @@ def login():
 
     session.permanent = True
     session["user_id"] = row[0]
-    response = jsonify({"message": "ログインに成功しました"})
-    # 既存のセッションクッキーを削除
-    response.delete_cookie(
-        'session',
-        domain='backend.digital-hikyaku.com',
-        path='/',
-        samesite='None',
-        secure=True
-    )
-    return response
+    
+    # 直接jsonifyを返すだけにして、余計なクッキー操作を削除
+    return jsonify({"message": "ログインに成功しました"})
 
 
 @app.route("/api/logout", methods=["POST"])
