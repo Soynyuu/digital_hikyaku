@@ -76,8 +76,35 @@ class _LetterDetailScreenState extends State<LetterDetailScreen> {
     }
   }
 
+  String _formatDuration(Duration duration) {
+    final hours = duration.inHours;
+    final minutes = duration.inMinutes % 60;
+    return '約$hours時間$minutes分';
+  }
+
   @override
   Widget build(BuildContext context) {
+    final now = DateTime.now();
+    if (!widget.letter.isArrived) {
+      final remainingTime = widget.letter.arriveAt.difference(now);
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              '配達中...',
+              style: GoogleFonts.sawarabiMincho(fontSize: 24),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              '到着まであと${_formatDuration(remainingTime)}',
+              style: GoogleFonts.sawarabiMincho(fontSize: 18),
+            ),
+          ],
+        ),
+      );
+    }
+
     return BackgroundScaffold(
       backgroundImage: 'assets/letter_set/${widget.letter.letterSet}.png',
       appBar: AppBar(

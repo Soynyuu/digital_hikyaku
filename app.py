@@ -11,25 +11,31 @@ from sqlalchemy.orm import Session
 from ulid import ULID
 from werkzeug.exceptions import HTTPException
 from waitress import serve
+from config import SECRET_KEY
 
 app = Flask(__name__)
-app.secret_key = urandom(16)
-CORS(app, 
-     supports_credentials=True, 
-     origins='*',  # すべてのオリジンを許可
-     allow_headers=['Content-Type'],
-     expose_headers=['Set-Cookie'])
+# app.secret_key = urandom(16)
+app.secret_key = SECRET_KEY
+
+CORS(
+    app,
+    supports_credentials=True,
+    origins="*",  # すべてのオリジンを許可
+    allow_headers=["Content-Type"],
+    expose_headers=["Set-Cookie"],
+)
 
 app.config.update(
-    SESSION_COOKIE_SAMESITE='None',  
-    SESSION_COOKIE_SECURE=True,      
-    SESSION_COOKIE_HTTPONLY=True,    
+    SESSION_COOKIE_SAMESITE="None",
+    SESSION_COOKIE_SECURE=True,
+    SESSION_COOKIE_HTTPONLY=True,
     SESSION_COOKIE_DOMAIN=None,  # ドメイン制限を解除
 )
 
 dbpath = "database.db"
 
 engine = create_engine(f"sqlite:///{dbpath}")
+
 
 def init_db():
     with open("schema.sql") as f:
@@ -70,9 +76,9 @@ def register():
         return jsonify({"error": "ユーザ名は文字列である必要があります"}), 400
     if not isinstance(password, str):
         return jsonify({"error": "パスワードは文字列である必要があります"}), 400
-    if not isinstance(user_latitude, float):
+    if not isinstance(user_latitude, float) and not isinstance(user_latitude, int):
         return jsonify({"error": "緯度は実数である必要があります"}), 400
-    if not isinstance(user_longitude, float):
+    if not isinstance(user_longitude, float) and not isinstance(user_longitude, int):
         return jsonify({"error": "経度は実数である必要があります"}), 400
 
     # データ
@@ -411,18 +417,19 @@ def new_letter():
                 (sender[1] - recipient[1]) ** 2 + (sender[2] - recipient[2]) ** 2
             ) ** 0.5  # 単位: 度
             dis_km = dis * 111  # 単位: km
-            dis_hour = dis_km / 7  # 単位: 時間
+            # dis_hour = dis_km / 7  # 単位: 時間
+            dis_hour = dis_km / 150  # 単位: 時間 デモ用に爆速
 
             DBsession.execute(
                 text(
-                    "INSERT INTO letters (id, sender_id, recipient_id, content, arrive_at, letter_set_id) VALUES (:id, :user_id, :target_id, :content, :arrive_at, :letter_set_id)"
+                    "INSERT INTO letters (id, sender_id, recipient_id, content, arrive_at, letter_set_id) VALUES (:id, :user_id, :target_id, :content, DATETIME('now',:arrive_at_diff), :letter_set_id)"
                 ),
                 {
                     "id": str(ULID()),
                     "user_id": userid,
                     "target_id": target_id,
                     "content": content,
-                    "arrive_at": datetime.now() + timedelta(hours=dis_hour),
+                    "arrive_at_diff": f"{int(timedelta(hours=dis_hour).total_seconds())} seconds",
                     "letter_set_id": letter_set_id,
                 },
             )
@@ -454,6 +461,31 @@ def send_history():
             )
 
             row = res.fetchall()
+            res = []
+            for r in row:
+                sender_name = DBsession.execute(
+                    text("SELECT name, display_name FROM users WHERE id = :id"),
+                    {"id": r[1]},
+                ).fetchone()
+
+                recipient_name = DBsession.execute(
+                    text("SELECT name, display_name FROM users WHERE id = :id"),
+                    {"id": r[2]},
+                ).fetchone()
+
+                res.append(
+                    {
+                        "id": r[0],
+                        "sender_id": r[1],
+                        "sender_name": sender_name[0],
+                        "recipient_id": r[2],
+                        "recipient_name": recipient_name[0],
+                        "arrive_at": r[3],
+                        "read_flag": r[4],
+                        "created_at": r[5],
+                        "letter_set_id": r[6],
+                    }
+                )
 
         except Exception as e:
             app.logger.exception(e)
@@ -461,19 +493,6 @@ def send_history():
         finally:
             DBsession.close()
 
-    res = []
-    for r in row:
-        res.append(
-            {
-                "id": r[0],
-                "sender_id": r[1],
-                "recipient_id": r[2],
-                "arrive_at": r[3],
-                "read_flag": r[4],
-                "created_at": r[5],
-                "letter_set_id": r[6],
-            }
-        )
     return jsonify(res)
 
 
@@ -485,36 +504,53 @@ def receive_history():
 
     with Session(engine) as DBsession:
         try:
+            now = datetime.now()
             res = DBsession.execute(
                 text(
-                    "SELECT id, sender_id, recipient_id, arrive_at <= :now AS is_arrived, arrive_at, read_flag, letter_set_id FROM letters WHERE recipient_id = :id"
+                    """
+                    SELECT 
+                        letters.id,
+                        letters.sender_id,
+                        letters.recipient_id,
+                        letters.arrive_at,
+                        letters.read_flag,
+                        letters.created_at,
+                        letters.letter_set_id,
+                        sender.name as sender_name,
+                        recipient.name as recipient_name
+                    FROM letters 
+                    JOIN users as sender ON letters.sender_id = sender.id
+                    JOIN users as recipient ON letters.recipient_id = recipient.id
+                    WHERE letters.recipient_id = :id
+                    """
                 ),
-                {"id": userid, "now": datetime.now()},
+                {"id": userid},
             )
 
             row = res.fetchall()
+            res = []
+            for r in row:
+                res.append(
+                    {
+                        "id": r[0],
+                        "sender_id": r[1],
+                        "recipient_id": r[2],
+                        "arrive_at": 1 if r[3] <= now else 0,  # datetime比較の結果をint型で返す
+                        "read_flag": r[4],
+                        "created_at": r[5],
+                        "letter_set_id": r[6],
+                        "sender_name": r[7],
+                        "recipient_name": r[8],
+                    }
+                )
+
+            return jsonify(res)
 
         except Exception as e:
             app.logger.exception(e)
             return jsonify({"error": "内部エラーが発生しました"}), 500
         finally:
             DBsession.close()
-
-    res = []
-    for r in row:
-        print(r)
-        res.append(
-            {
-                "id": r[0],
-                "sender_id": r[1],
-                "recipient_id": r[2],
-                "is_arrived": r[3],
-                "arrive_at": r[4],
-                "read_flag": r[5],
-                "letter_set_id": r[6],
-            }
-        )
-    return jsonify(res)
 
 
 @app.route("/api/letter/read", methods=["POST"])
@@ -572,8 +608,5 @@ def read_letter():
 
 if __name__ == "__main__":
     init_db()
-    # app.run(
-    #    host="0.0.0.0",
-    #    port=1080,
-    # )
+    # app.run(host="0.0.0.0", port=1080, debug=True)
     serve(app, host="0.0.0.0", port=5000)

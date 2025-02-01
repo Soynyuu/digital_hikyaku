@@ -35,20 +35,7 @@ class _ReceivedLettersScreenState extends State<ReceivedLettersScreen> {
       if (response.statusCode == 200) {
         final List<dynamic> lettersJson = response.data;
         setState(() {
-          _letters = lettersJson.map((letterJson) {
-            // 送信者の名前を取得するロジックを追加する必要があります
-            return Letter(
-              id: letterJson['id'],
-              senderId: letterJson['sender_id'],
-              recipientId: letterJson['recipient_id'],
-              recipientName: letterJson['recipient_name'] ?? '不明',
-              letterSet: letterJson['letter_set_id'],
-              content: '', // 内容は手紙を開くときに取得
-              isArrived: letterJson['is_arrived'] == 1,
-              arriveAt: DateTime.parse(letterJson['arrive_at']),
-              readFlag: letterJson['read_flag'] == 1,
-            );
-          }).toList();
+          _letters = lettersJson.map((json) => Letter.fromJson(json)).toList();
         });
       } else {
         throw Exception('Failed to load letters');
@@ -95,12 +82,14 @@ class _ReceivedLettersScreenState extends State<ReceivedLettersScreen> {
                       style: GoogleFonts.sawarabiMincho(),
                     ),
                     subtitle: Text(
-                      '受信者: ${letter.recipientName}',
+                      '送信者: ${letter.senderName}',
                       style: GoogleFonts.sawarabiMincho(),
                     ),
                     trailing: letter.readFlag 
                       ? const Icon(Icons.mark_email_read)
-                      : const Icon(Icons.mail),
+                      : letter.isArrived 
+                          ? const Icon(Icons.mail)
+                          : const Icon(Icons.schedule),
                     onTap: () {
                       Navigator.push(
                         context,
