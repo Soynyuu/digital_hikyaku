@@ -4,6 +4,7 @@ import '../services/api_service.dart';
 import '../widgets/background_scaffold.dart';
 import 'bottombar.dart'; // 追加: BottomBarをインポート
 import 'package:digital_hikyaku/services/geo_api_service.dart'; // GeoApiServiceをインポート
+import 'tutorial_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -17,8 +18,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _displayNameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _zipController = TextEditingController(); // 郵便番号コントローラーを追加
-  final GeoApiService _geoApiService = GeoApiService(); // GeoApiServiceのインスタンスを作成
+  final TextEditingController _zipController =
+      TextEditingController(); // 郵便番号コントローラーを追加
+  final GeoApiService _geoApiService =
+      GeoApiService(); // GeoApiServiceのインスタンスを作成
   String? _errorMessage;
   bool _isLoading = false;
 
@@ -70,7 +73,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
         if (loginResponse.statusCode == 200) {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => const BottomBar()),
+            // MaterialPageRoute(builder: (context) => const BottomBar()),
+            MaterialPageRoute(builder: (context) => TutorialScreen()),
           );
         } else {
           final body = loginResponse.data;
@@ -123,7 +127,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
               TextField(
                 controller: _zipController,
-                decoration: const InputDecoration(labelText: '郵便番号'), // 郵便番号入力フィールドを追加
+                decoration:
+                    const InputDecoration(labelText: '郵便番号'), // 郵便番号入力フィールドを追加
                 keyboardType: TextInputType.number,
               ),
               const SizedBox(height: 20),
