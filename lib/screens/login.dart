@@ -20,6 +20,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _passwordController = TextEditingController();
   String? _errorMessage;
   bool _isLoading = false;
+  bool _passwordVisible = false; // パスワード表示状態を管理する変数
 
   Future<void> _login() async {
     setState(() {
@@ -38,7 +39,7 @@ class _LoginScreenState extends State<LoginScreen> {
         if (!mounted) return;
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) =>TutorialScreen()),
+          MaterialPageRoute(builder: (context) => TutorialScreen()),
         );
       } else {
         setState(() {
@@ -79,8 +80,24 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               TextField(
                 controller: _passwordController,
-                decoration: const InputDecoration(labelText: 'パスワード'),
-                obscureText: true,
+                decoration: InputDecoration(
+                  labelText: 'パスワード',
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _passwordVisible
+                          ? Icons.visibility
+                          : Icons.visibility_off,
+                      color: Theme.of(context).primaryColorDark,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _passwordVisible = !_passwordVisible;
+                      });
+                    },
+                    tooltip: _passwordVisible ? 'パスワードを隠す' : 'パスワードを表示',
+                  ),
+                ),
+                obscureText: !_passwordVisible,
               ),
               const SizedBox(height: 20),
               if (_errorMessage != null)

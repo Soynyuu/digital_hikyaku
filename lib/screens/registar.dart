@@ -24,6 +24,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       GeoApiService(); // GeoApiServiceのインスタンスを作成
   String? _errorMessage;
   bool _isLoading = false;
+  bool _passwordVisible = false; // パスワード表示状態を管理する変数
 
   void _register() async {
     setState(() {
@@ -122,8 +123,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
               TextField(
                 controller: _passwordController,
-                decoration: const InputDecoration(labelText: 'パスワード'),
-                obscureText: true,
+                decoration: InputDecoration(
+                  labelText: 'パスワード',
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _passwordVisible
+                          ? Icons.visibility
+                          : Icons.visibility_off,
+                      color: Theme.of(context).primaryColorDark,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _passwordVisible = !_passwordVisible;
+                      });
+                    },
+                    tooltip: _passwordVisible ? 'パスワードを隠す' : 'パスワードを表示',
+                  ),
+                ),
+                obscureText: !_passwordVisible,
               ),
               TextField(
                 controller: _zipController,
