@@ -43,8 +43,8 @@ class ApiService {
         'name': name,
         'display_name': displayName,
         'password': password,
-        'user_longitude': userLongitude,  // 数値型のまま送信
-        'user_latitude': userLatitude,    // 数値型のまま送信
+        'user_longitude': userLongitude, // 数値型のまま送信
+        'user_latitude': userLatitude, // 数値型のまま送信
       },
     );
   }
@@ -136,5 +136,12 @@ class ApiService {
     final url = '/relationship/list';
     final response = await _dio.get(url);
     return response;
+  }
+
+  // クッキーをクリアするメソッド
+  Future<void> clearCookies() async {
+    if (!kIsWeb) {
+      await clearAllCookies();
+    }
   }
 }

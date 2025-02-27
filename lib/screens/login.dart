@@ -1,3 +1,4 @@
+import 'tutorial_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/api_service.dart';
@@ -37,7 +38,7 @@ class _LoginScreenState extends State<LoginScreen> {
         if (!mounted) return;
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const BottomBar()),
+          MaterialPageRoute(builder: (context) =>TutorialScreen()),
         );
       } else {
         setState(() {
