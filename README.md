@@ -57,4 +57,4 @@ flutter run
 ## 謝辞
 
 - データ提供: [HeartRails Geo API](https://geoapi.heartrails.com/)
--  - レターセット:https://illustmansion.com/template/flame/letter-blue-flowers
+- レターセット:https://illustmansion.com/template/flame/letter-blue-flowers
