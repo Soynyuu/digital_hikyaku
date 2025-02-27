@@ -19,11 +19,12 @@ dependencies:
   http: ^1.2.2
   shared_preferences: ^2.3.5
   geolocator: ^13.0.2
-  dio: ^5.8.0+1
+  dio: ^5.3.3
   # Webでは使用しない
   cookie_jar: ^4.0.8
-  dio_cookie_manager: ^3.2.0
+  dio_cookie_manager: ^3.1.1
   intl: ^0.20.2
+  path_provider: ^2.1.1
 
 dev_dependencies:
   flutter_test:

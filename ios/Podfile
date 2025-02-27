@@ -1,0 +1,16 @@
+# ...existing code...
+
+post_install do |installer|
+  installer.pods_project.targets.each do |target|
+    target.build_configurations.each do |config|
+      # ...existing code...
+      
+      # HTTPクッキー用にApp Transport Securityの設定を追加
+      config.build_settings['SWIFT_ACTIVE_COMPILATION_CONDITIONS'] ||= ['$(inherited)']
+      config.build_settings['SWIFT_ACTIVE_COMPILATION_CONDITIONS'] << 'DEBUG' if config.name == 'Debug'
+      
+      # 必要に応じてNSAppTransportSecurity設定を追加
+      # もしInfo.plistに直接設定する場合はこの部分は不要
+    end
+  end
+end
