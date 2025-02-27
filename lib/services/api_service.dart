@@ -1,144 +1,147 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:http/http.dart' as http;
-import 'package:digital_hikyaku/services/cookie_service.dart';
+import 'package:flutter/foundation.dart';
+import 'package:dio/dio.dart';
+// 条件付きインポートを追加
+import 'cookie_manager_stub.dart' if (dart.library.io) 'cookie_manager_io.dart';
 
-/// APIとの通信を担当するサービスクラス
-///
-/// プラットフォームに応じた適切な通信処理とクッキー管理を行います。
 class ApiService {
-  /// APIのベースURL
-  final String baseUrl;
+  late final Dio _dio;
 
-  final CookieService _cookieService = CookieService();
+  ApiService() {
+    _dio = Dio(BaseOptions(
+      baseUrl: 'https://backend.digital-hikyaku.com/api',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      validateStatus: (status) => true,
+      receiveDataWhenStatusError: true,
+      followRedirects: true,
+      contentType: 'application/json',
+      responseType: ResponseType.json,
+    ))
+      ..interceptors.addAll([
+        InterceptorsWrapper(
+          onRequest: (options, handler) {
+            options.extra['withCredentials'] = true;
+            return handler.next(options);
+          },
+          onError: (DioException e, handler) {
+            debugPrint('API Error: ${e.message}');
+            return handler.next(e);
+          },
+        ),
+        if (!kIsWeb) createCookieManager(),
+      ]);
+  }
 
-  /// APIサービスのコンストラクタ
-  ///
-  /// [baseUrl] 通信先のベースURL
-  ApiService({required this.baseUrl});
+  Future<Response> register(String name, String displayName, String password,
+      double userLongitude, double userLatitude) async {
+    return await _dio.post(
+      '/register',
+      data: {
+        'name': name,
+        'display_name': displayName,
+        'password': password,
+        'user_longitude': userLongitude, // 数値型のまま送信
+        'user_latitude': userLatitude, // 数値型のまま送信
+      },
+    );
+  }
 
-  /// GETリクエストを実行
-  ///
-  /// [endpoint] APIエンドポイント
-  /// [headers] リクエストヘッダー
-  Future<http.Response> get(String endpoint,
-      {Map<String, String>? headers}) async {
-    final url = '$baseUrl/$endpoint';
-
+  Future<Response> login(String name, String password) async {
     try {
-      if (kIsWeb) {
-        // Web用の実装
-        return await http.get(Uri.parse(url), headers: headers);
-      } else {
-        // iOS/Android用の実装
-        return await _cookieService.makeRequest(
-          url,
-          method: 'GET',
-          headers: headers,
-        );
-      }
+      final response = await _dio.post(
+        '/login',
+        data: {
+          'name': name,
+          'password': password,
+        },
+      );
+      return response;
     } catch (e) {
-      throw Exception('GETリクエストエラー: $e');
+      debugPrint('Login error: $e');
+      rethrow;
     }
   }
 
-  /// POSTリクエストを実行
-  ///
-  /// [endpoint] APIエンドポイント
-  /// [headers] リクエストヘッダー
-  /// [body] リクエストボディ
-  Future<http.Response> post(String endpoint,
-      {Map<String, String>? headers, Object? body}) async {
-    final url = '$baseUrl/$endpoint';
-
-    try {
-      if (kIsWeb) {
-        // Web用の実装
-        return await http.post(Uri.parse(url), headers: headers, body: body);
-      } else {
-        // iOS/Android用の実装
-        return await _cookieService.makeRequest(
-          url,
-          method: 'POST',
-          headers: headers,
-          body: body,
-        );
-      }
-    } catch (e) {
-      throw Exception('POSTリクエストエラー: $e');
-    }
+  Future<Response> logout() async {
+    final response = await _dio.post('/logout');
+    return response;
   }
 
-  /// PUTリクエストを実行
-  ///
-  /// [endpoint] APIエンドポイント
-  /// [headers] リクエストヘッダー
-  /// [body] リクエストボディ
-  Future<http.Response> put(String endpoint,
-      {Map<String, String>? headers, Object? body}) async {
-    final url = '$baseUrl/$endpoint';
-
-    try {
-      if (kIsWeb) {
-        // Web用の実装
-        return await http.put(Uri.parse(url), headers: headers, body: body);
-      } else {
-        // iOS/Android用の実装
-        return await _cookieService.makeRequest(
-          url,
-          method: 'PUT',
-          headers: headers,
-          body: body,
-        );
-      }
-    } catch (e) {
-      throw Exception('PUTリクエストエラー: $e');
-    }
+  Future<Response> getUserInfo() async {
+    final response = await _dio.get('/me');
+    return response;
   }
 
-  /// DELETEリクエストを実行
-  ///
-  /// [endpoint] APIエンドポイント
-  /// [headers] リクエストヘッダー
-  /// [body] リクエストボディ
-  Future<http.Response> delete(String endpoint,
-      {Map<String, String>? headers, Object? body}) async {
-    final url = '$baseUrl/$endpoint';
-
-    try {
-      if (kIsWeb) {
-        // Web用の実装
-        return await http.delete(Uri.parse(url), headers: headers, body: body);
-      } else {
-        // iOS/Android用の実装
-        return await _cookieService.makeRequest(
-          url,
-          method: 'DELETE',
-          headers: headers,
-          body: body,
-        );
-      }
-    } catch (e) {
-      throw Exception('DELETEリクエストエラー: $e');
-    }
+  Future<Response> searchUser(String query) async {
+    final url = '/search-user?q=$query';
+    final response = await _dio.get(url);
+    return response;
   }
 
-  /// クッキーをクリアするメソッド
+  Future<Response> createRelationship(String targetId) async {
+    final url = '/relationship/new';
+    final response = await _dio.post(
+      url,
+      data: {
+        'target_id': targetId,
+      },
+    );
+    return response;
+  }
+
+  Future<Response> createLetter(
+    String targetId,
+    String content,
+    String letterSetId,
+  ) async {
+    final url = '/letter/new';
+    final response = await _dio.post(
+      url,
+      data: {
+        'target_id': targetId,
+        'content': content,
+        'letter_set_id': letterSetId,
+      },
+    );
+    return response;
+  }
+
+  Future<Response> getSendHistory() async {
+    final url = '/letter/send_history';
+    final response = await _dio.get(url);
+    return response;
+  }
+
+  Future<Response> getReceiveHistory() async {
+    final url = '/letter/receive_history';
+    final response = await _dio.get(url);
+    return response;
+  }
+
+  Future<Response> readLetter(String letterId) async {
+    final url = '/letter/read';
+    final response = await _dio.post(
+      url,
+      data: {
+        'letter_id': letterId,
+      },
+    );
+    return response;
+  }
+
+  Future<Response> getContacts() async {
+    final url = '/relationship/list';
+    final response = await _dio.get(url);
+    return response;
+  }
+
+  // クッキーをクリアするメソッド
   Future<void> clearCookies() async {
     if (!kIsWeb) {
-      await _cookieService.clearCookies();
-    }
-  }
-
-  /// JSONデータを解析するユーティリティメソッド
-  ///
-  /// [response] HTTPレスポンス
-  /// 無効なJSONの場合は例外をスローします
-  dynamic parseJson(http.Response response) {
-    try {
-      return jsonDecode(response.body);
-    } catch (e) {
-      throw Exception('JSONパースエラー: $e');
+      await clearAllCookies();
     }
   }
 }

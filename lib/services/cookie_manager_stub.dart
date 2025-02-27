@@ -1,20 +1,15 @@
 import 'package:dio/dio.dart';
 
-/// プラットフォーム互換性のためのスタブクラス
+/// Web プラットフォーム用のスタブ実装
 ///
-/// Webプラットフォームで使用されます
-class CookieManager extends Interceptor {
-  /// スタブコンストラクタ
-  CookieManager([dynamic cookieJar]);
-
-  @override
-  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
-    // Webプラットフォームではブラウザがクッキーを処理
-    handler.next(options);
-  }
+/// Web では cookie は自動的にブラウザによって管理されるため、
+/// 実際の実装は必要ありません
+Interceptor createCookieManager() {
+  // Web では何もしないインターセプターを返す
+  return InterceptorsWrapper();
 }
 
-/// スタブインターセプターを作成
-Interceptor createCookieManager() {
-  return Interceptor(); // 何もしないインターセプター
+/// Web プラットフォーム用のクッキークリア機能（スタブ実装）
+Future<void> clearAllCookies() async {
+  // Web では何もしない
 }
