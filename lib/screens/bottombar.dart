@@ -8,13 +8,11 @@ import 'letter_read/received_letters.dart'; // 追加: 受信手紙一覧画面�
 
 class BottomBar extends StatefulWidget {
   final int initialIndex;
-  
-  const BottomBar({
-    super.key,
-    this.initialIndex = 0,
-  });
 
-  static final GlobalKey<_BottomBarState> globalKey = GlobalKey<_BottomBarState>();
+  const BottomBar({super.key, this.initialIndex = 0});
+
+  static final GlobalKey<_BottomBarState> globalKey =
+      GlobalKey<_BottomBarState>();
 
   @override
   _BottomBarState createState() => _BottomBarState();
@@ -52,10 +50,7 @@ class _BottomBarState extends State<BottomBar> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(
             icon: Icon(Icons.local_post_office),
             label: '届いた手紙',
@@ -68,10 +63,7 @@ class _BottomBarState extends State<BottomBar> {
             icon: Icon(Icons.directions_walk),
             label: '飛脚履歴',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.contacts),
-            label: '連絡先',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.contacts), label: '連絡先'),
         ],
         currentIndex: _selectedIndex,
         selectedItemColor: Colors.brown,

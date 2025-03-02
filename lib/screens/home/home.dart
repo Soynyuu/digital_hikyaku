@@ -4,6 +4,7 @@ import '../letter_read/received_letters.dart';
 import '../letter_write/write_top.dart';
 import '../walk_history/walk.dart';
 import '../contacts/contacts.dart';
+import '../settings/settings.dart';
 import '../bottombar.dart'; // 追加: BottomBarをインポート
 import '../../widgets/background_scaffold.dart';
 
@@ -11,6 +12,20 @@ class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   void _navigateToScreen(BuildContext context, int index) {
+    if (index == 5) {
+      // 設定画面への遷移
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const BackgroundScaffold(
+            body: SettingsScreen(),
+          ),
+        ),
+      );
+      return;
+    }
+
+    // その他の画面への遷移（既存のロジック）
     Widget screen;
     switch (index) {
       case 0:
@@ -43,11 +58,15 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildMenuCard(
-      BuildContext context, String title, IconData icon, int tabIndex) {
+    BuildContext context,
+    String title,
+    IconData icon,
+    int tabIndex,
+  ) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final isWideScreen = MediaQuery.of(context).size.width > 600;
-        
+
         return Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(24),
@@ -135,76 +154,105 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
         child: SafeArea(
-          child: Center( // 追加: 全体を中央寄せ
+          child: Center(
+            // 追加: 全体を中央寄せ
             child: SingleChildScrollView(
-              child: Container( // 追加: 最大幅を制限するコンテナ
+              child: Container(
+                // 追加: 最大幅を制限するコンテナ
                 constraints: const BoxConstraints(
                   maxWidth: 1200, // PC表示時の最大幅を設定
                 ),
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    minHeight: MediaQuery.of(context).size.height -
-                        MediaQuery.of(context).padding.top -
-                        MediaQuery.of(context).padding.bottom,
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.center, // 追加: 子要素を中央寄せ
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(top: 40, bottom: 40),
-                        child: Image.asset(
-                          'assets/digital_hikyaku_logo.png',
-                          height: 120,
-                          fit: BoxFit.contain,
+                child: Column(
+                  children: [
+                    // 追加: ロゴ
+                    Padding(
+                      padding: const EdgeInsets.only(top: 40, bottom: 40),
+                      child: Image.asset(
+                        'assets/digital_hikyaku_logo.png',
+                        height: 120,
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          final isWideScreen = constraints.maxWidth > 600;
+                          final itemWidth = isWideScreen
+                              ? 300.0
+                              : (constraints.maxWidth - 48) / 2;
+                          return Container(
+                            // 追加: グリッドを中央寄せするコンテナ
+                            width: isWideScreen
+                                ? 632 // 2列分の幅 (300 * 2 + 32(spacing))
+                                : constraints.maxWidth,
+                            child: Wrap(
+                              alignment: WrapAlignment.center,
+                              spacing: isWideScreen ? 32 : 16,
+                              runSpacing: isWideScreen ? 32 : 16,
+                              children: [
+                                SizedBox(
+                                  width: itemWidth,
+                                  child: _buildMenuCard(
+                                    context,
+                                    '手紙を読む',
+                                    Icons.mail,
+                                    1,
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: itemWidth,
+                                  child: _buildMenuCard(
+                                    context,
+                                    '手紙を書く',
+                                    Icons.history_edu,
+                                    2,
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: itemWidth,
+                                  child: _buildMenuCard(
+                                    context,
+                                    '歩数履歴',
+                                    Icons.directions_walk,
+                                    3,
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: itemWidth,
+                                  child: _buildMenuCard(
+                                    context,
+                                    '連絡先',
+                                    Icons.people,
+                                    4,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 40),
+                    // 設定ボタン（控えめなデザイン）
+                    TextButton.icon(
+                      onPressed: () => _navigateToScreen(context, 5),
+                      icon: Icon(Icons.settings,
+                          size: 20, color: Colors.brown.shade400),
+                      label: Text(
+                        '設定',
+                        style: GoogleFonts.sawarabiMincho(
+                          fontSize: 14,
+                          color: Colors.brown.shade400,
                         ),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: LayoutBuilder(
-                          builder: (context, constraints) {
-                            final isWideScreen = constraints.maxWidth > 600;
-                            final itemWidth = isWideScreen
-                                ? 300.0
-                                : (constraints.maxWidth - 48) / 2;
-                            return Container( // 追加: グリッドを中央寄せするコンテナ
-                              width: isWideScreen
-                                  ? 632 // 2列分の幅 (300 * 2 + 32(spacing))
-                                  : constraints.maxWidth,
-                              child: Wrap(
-                                alignment: WrapAlignment.center,
-                                spacing: isWideScreen ? 32 : 16,
-                                runSpacing: isWideScreen ? 32 : 16,
-                                children: [
-                                  SizedBox(
-                                    width: itemWidth,
-                                    child: _buildMenuCard(
-                                        context, '手紙を読む', Icons.mail, 1),
-                                  ),
-                                  SizedBox(
-                                    width: itemWidth,
-                                    child: _buildMenuCard(
-                                        context, '手紙を書く', Icons.history_edu, 2),
-                                  ),
-                                  SizedBox(
-                                    width: itemWidth,
-                                    child: _buildMenuCard(
-                                        context, '歩数履歴', Icons.directions_walk, 3),
-                                  ),
-                                  SizedBox(
-                                    width: itemWidth,
-                                    child: _buildMenuCard(
-                                        context, '連絡先', Icons.people, 4),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        ),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
                       ),
-                      const SizedBox(height: 32),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
                 ),
               ),
             ),
