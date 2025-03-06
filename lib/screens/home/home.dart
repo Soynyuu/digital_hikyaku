@@ -236,11 +236,11 @@ class HomeScreen extends StatelessWidget {
                     const SizedBox(height: 40),
                     // 設定ボタン（控えめなデザイン）
                     TextButton.icon(
-                      onPressed: () => _navigateToScreen(context, 5),
-                      icon: Icon(Icons.settings,
+                      onPressed: () => showLicensePage(context: context),
+                      icon: Icon(Icons.book,
                           size: 20, color: Colors.brown.shade400),
                       label: Text(
-                        '設定',
+                        'ライセンス表示',
                         style: GoogleFonts.sawarabiMincho(
                           fontSize: 14,
                           color: Colors.brown.shade400,

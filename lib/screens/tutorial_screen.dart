@@ -9,38 +9,47 @@ class TutorialScreen extends StatelessWidget {
   final List<PageViewModel> pages = [
     PageViewModel(
       pageColor: Colors.blue,
-      bubble: Icon(Icons.touch_app, size: 30.0, color: Colors.white),
-      title: Text("アプリの使い方",
+      bubble: Icon(Icons.mail_outline, size: 30.0, color: Colors.white),
+      title: Text("手紙を書いたことはありますか？",
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0)),
       body: Text(
-        "簡単な操作方法を説明します。スワイプして次のページへ進んでください。",
+        "手紙を貰ったことはありますか？",
         style: TextStyle(fontSize: 16.0),
       ),
-      mainImage: Icon(Icons.phone_android, size: 200.0, color: Colors.white),
+      mainImage: Icon(Icons.mail, size: 200.0, color: Colors.white),
     ),
     PageViewModel(
       pageColor: Colors.green,
-      bubble: Icon(Icons.visibility, size: 30.0, color: Colors.white),
-      title: Text("私たちのビジョン",
+      bubble: Icon(Icons.hourglass_empty, size: 30.0, color: Colors.white),
+      title: Text("ゆっくりとした時間の大切さ",
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0)),
       body: Text(
-        "このアプリで、あなたの生活をもっと便利に。理念や目標を共有します。",
+        "スピードや効率も大切ですが、ゆっくりとした場所をゆっくりとした場所として守ることもとても大切です。",
         style: TextStyle(fontSize: 16.0),
       ),
-      mainImage:
-          Icon(Icons.lightbulb_outline, size: 200.0, color: Colors.white),
+      mainImage: Icon(Icons.spa, size: 200.0, color: Colors.white),
     ),
     PageViewModel(
       pageColor: Colors.orange,
-      bubble: Icon(Icons.star, size: 30.0, color: Colors.white),
-      title: Text("さあ、始めましょう",
+      bubble: Icon(Icons.favorite, size: 30.0, color: Colors.white),
+      title: Text("デジタルひきゃくについて",
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0)),
       body: Text(
-        "準備が整いました！アプリを使い始めるには「完了」をタップしてください。",
+        "ドタバタと日々を生きるみなさんにゆっくりとした時間と気持ちを提供したい、そんな思いで作られました。",
         style: TextStyle(fontSize: 16.0),
       ),
-      mainImage:
-          Icon(Icons.check_circle_outline, size: 200.0, color: Colors.white),
+      mainImage: Icon(Icons.favorite_outline, size: 200.0, color: Colors.white),
+    ),
+    PageViewModel(
+      pageColor: Colors.purple,
+      bubble: Icon(Icons.send, size: 30.0, color: Colors.white),
+      title: Text("最初の手紙",
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0)),
+      body: Text(
+        "この手紙を皮切りに、沢山の人に手紙が繋がっていきますように。",
+        style: TextStyle(fontSize: 16.0),
+      ),
+      mainImage: Icon(Icons.mail_outline, size: 200.0, color: Colors.white),
     ),
   ];
 
