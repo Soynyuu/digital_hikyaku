@@ -9,6 +9,12 @@ Interceptor createCookieManager() {
   return InterceptorsWrapper();
 }
 
+/// Web プラットフォーム用の非同期クッキーマネージャー初期化（スタブ実装）
+Future<Interceptor> initCookieManager() async {
+  // Web では何もしないインターセプターを返す
+  return InterceptorsWrapper();
+}
+
 /// Web プラットフォーム用のクッキークリア機能（スタブ実装）
 Future<void> clearAllCookies() async {
   // Web では何もしない

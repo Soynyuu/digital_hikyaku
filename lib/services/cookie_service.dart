@@ -12,9 +12,12 @@ import 'package:path_provider/path_provider.dart';
 /// シングルトンパターンを使用して、アプリ全体で一貫したクッキー管理を提供します。
 class CookieService {
   static final CookieService _instance = CookieService._internal();
-  late CookieJar _cookieJar;
-  late Dio _dio;
+  CookieJar? _cookieJar;
+  Dio? _dio;
   bool _isInitialized = false;
+
+  // 基本ドメイン
+  static const String _baseDomain = 'backend.digital-hikyaku.com';
 
   /// シングルトンインスタンスを返すファクトリコンストラクタ
   factory CookieService() {
@@ -39,18 +42,35 @@ class CookieService {
       try {
         final Directory appDocDir = await getApplicationDocumentsDirectory();
         final String appDocPath = appDocDir.path;
+        final cookiePath = "$appDocPath/.cookies/";
+
+        // クッキー保存用ディレクトリを確実に作成
+        await Directory(cookiePath).create(recursive: true);
+
         _cookieJar = PersistCookieJar(
-          storage: FileStorage("$appDocPath/.cookies/"),
+          storage: FileStorage(cookiePath),
+          ignoreExpires: false, // 有効期限を尊重
         );
+
+        logCookieMessage('永続クッキーストレージを初期化: $cookiePath');
       } catch (e) {
-        print('クッキーストレージの初期化エラー: $e');
+        logCookieMessage('クッキーストレージの初期化エラー: $e');
         // フォールバックとしてメモリ内クッキージャーを使用
         _cookieJar = CookieJar();
       }
     }
 
-    _dio.interceptors.add(CookieManager(_cookieJar));
-    _isInitialized = true;
+    if (_cookieJar != null && _dio != null) {
+      _dio!.interceptors.add(CookieManager(_cookieJar!));
+      _isInitialized = true;
+      logCookieMessage('クッキーサービスが初期化されました');
+    }
+  }
+
+  /// Dioインスタンスのクッキーマネージャーを取得
+  Future<CookieManager> getDioCookieManager() async {
+    await initialize();
+    return CookieManager(_cookieJar!);
   }
 
   /// HTTPリクエストにクッキーを適用して実行
@@ -68,7 +88,7 @@ class CookieService {
     await initialize();
 
     // クッキーを取得
-    final cookies = await _cookieJar.loadForRequest(Uri.parse(url));
+    final cookies = await _cookieJar!.loadForRequest(Uri.parse(url));
 
     // クッキーヘッダーを作成
     final cookieHeader = cookies.isNotEmpty
@@ -120,23 +140,37 @@ class CookieService {
 
       for (var cookieStr in rawCookies.split(',')) {
         try {
-          receivedCookies.add(Cookie.fromSetCookieValue(cookieStr.trim()));
+          final cleanCookieStr = cookieStr.trim();
+          if (cleanCookieStr.isNotEmpty) {
+            final cookie = Cookie.fromSetCookieValue(cleanCookieStr);
+
+            // ドメインが指定されていない場合は基本ドメインを設定
+            if (cookie.domain == null || cookie.domain!.isEmpty) {
+              final requestUri = Uri.parse(url);
+              cookie.domain = requestUri.host;
+            }
+
+            // `.` で始まるドメインを処理（リクエストとレスポンスの違いを処理）
+            if (cookie.domain != null && cookie.domain!.startsWith('.')) {
+              final cleanDomain = cookie.domain!.substring(1);
+              cookie.domain = cleanDomain;
+            }
+
+            receivedCookies.add(cookie);
+            logCookieMessage(
+                'クッキーを受信: ${cookie.name}=${cookie.value} (domain=${cookie.domain}, path=${cookie.path})');
+          }
         } catch (e) {
-          print('クッキー解析エラー: $e');
+          logCookieMessage('クッキー解析エラー: $e, cookie: $cookieStr');
         }
       }
 
       if (receivedCookies.isNotEmpty) {
-        await _cookieJar.saveFromResponse(
-            Uri.parse(url),
-            receivedCookies
-                .map((cookie) => Cookie(cookie.name, cookie.value)
-                  ..domain = cookie.domain
-                  ..expires = cookie.expires
-                  ..httpOnly = cookie.httpOnly
-                  ..path = cookie.path
-                  ..secure = cookie.secure)
-                .toList());
+        await _cookieJar!.saveFromResponse(
+          Uri.parse(url),
+          receivedCookies,
+        );
+        logCookieMessage('${receivedCookies.length}個のクッキーを保存しました');
       }
     }
   }
@@ -144,7 +178,8 @@ class CookieService {
   /// 全てのクッキーをクリア
   Future<void> clearCookies() async {
     await initialize();
-    await _cookieJar.deleteAll();
+    await _cookieJar!.deleteAll();
+    logCookieMessage('全てのクッキーをクリアしました');
   }
 
   /// 特定のURLに関連するクッキーを取得
@@ -152,6 +187,50 @@ class CookieService {
   /// [url] クッキーを取得するURL
   Future<List<Cookie>> getCookiesForUrl(String url) async {
     await initialize();
-    return await _cookieJar.loadForRequest(Uri.parse(url));
+    final cookies = await _cookieJar!.loadForRequest(Uri.parse(url));
+    logCookieMessage('$urlのクッキー数: ${cookies.length}');
+    return cookies;
+  }
+
+  /// デバッグ用：すべてのクッキーを表示
+  Future<void> printAllCookies() async {
+    if (kIsWeb) {
+      logCookieMessage('Webプラットフォーム: クッキーはブラウザにより管理されています');
+      return;
+    }
+
+    await initialize();
+    final apiUrl = 'https://$_baseDomain/api';
+    final cookies = await _cookieJar!.loadForRequest(Uri.parse(apiUrl));
+
+    logCookieMessage('=== クッキー情報 ===');
+    if (cookies.isEmpty) {
+      logCookieMessage('保存されたクッキーはありません');
+    } else {
+      for (var cookie in cookies) {
+        logCookieMessage(
+            '${cookie.name}=${cookie.value} (domain=${cookie.domain}, path=${cookie.path}, httpOnly=${cookie.httpOnly}, secure=${cookie.secure})');
+      }
+    }
+    logCookieMessage('==================');
+  }
+}
+
+// DioのResponseExtension拡張
+extension ResponseExtension on Response {
+  /// レスポンスに含まれるクッキーを保存する
+  Future<void> saveCookies(String baseUrl) async {
+    final cookieService = CookieService();
+    await cookieService.initialize();
+
+    // この関数はDioレスポンスからクッキーを保存するための補助関数
+    // Dioの内部クッキー処理に任せるため実装は省略
+  }
+}
+
+// デバッグ出力を簡素化する関数
+void logCookieMessage(String message) {
+  if (!kIsWeb) {
+    print('[CookieService] $message');
   }
 }

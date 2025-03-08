@@ -33,7 +33,13 @@ Future<PersistCookieJar> _getCookieJar() async {
   return _cookieJar!;
 }
 
-/// モバイルプラットフォーム用のクッキーマネージャーを作成して返す
+/// モバイルプラットフォーム用のクッキーマネージャーを初期化して返す
+Future<Interceptor> initCookieManager() async {
+  final cookieJar = await _getCookieJar();
+  return CookieManager(cookieJar);
+}
+
+/// 下位互換性のため古い同期メソッドを維持
 Interceptor createCookieManager() {
   return _AsyncCookieManager();
 }
