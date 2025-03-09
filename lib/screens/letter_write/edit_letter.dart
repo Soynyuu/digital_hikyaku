@@ -3,6 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:just_audio/just_audio.dart';
 import '../../widgets/background_scaffold.dart';
 import 'check_letter.dart';
+import 'dart:html' as html; // Web用のimportを追加
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class EditLetterScreen extends StatefulWidget {
   final String backgroundImage;
@@ -24,6 +26,7 @@ class _EditLetterScreenState extends State<EditLetterScreen> {
   final TextEditingController _textController = TextEditingController();
   final AudioPlayer _audioPlayer = AudioPlayer();
   String _previousText = '';
+  html.AudioElement? _webAudioElement; // Web用のAudio要素
 
   @override
   void initState() {
@@ -32,11 +35,21 @@ class _EditLetterScreenState extends State<EditLetterScreen> {
   }
 
   Future<void> _initAudio() async {
-    await _audioPlayer.setAsset('assets/audios/pen.mp3');
+    if (kIsWeb) {
+      _webAudioElement = html.AudioElement('assets/assets/audios/pen.mp3');
+    } else {
+      await _audioPlayer.setAsset('assets/audios/pen.mp3');
+    }
+
     _textController.addListener(() {
       if (_textController.text.length > _previousText.length) {
-        _audioPlayer.seek(Duration.zero);
-        _audioPlayer.play();
+        if (kIsWeb) {
+          _webAudioElement?.currentTime = 0;
+          _webAudioElement?.play();
+        } else {
+          _audioPlayer.seek(Duration.zero);
+          _audioPlayer.play();
+        }
       }
       _previousText = _textController.text;
     });
@@ -44,7 +57,9 @@ class _EditLetterScreenState extends State<EditLetterScreen> {
 
   @override
   void dispose() {
-    _audioPlayer.dispose();
+    if (!kIsWeb) {
+      _audioPlayer.dispose();
+    }
     _textController.dispose();
     super.dispose();
   }
