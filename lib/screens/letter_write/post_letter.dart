@@ -34,26 +34,30 @@ class PostLetterScreen extends StatelessWidget {
       if (response.statusCode == 200) {
         showDialog(
           context: context,
-          builder: (context) => AlertDialog(
-            title: Text('投函完了', style: GoogleFonts.sawarabiMincho()),
-            content: Text(responseData['message'] ?? '手紙が投函されました。', 
-              style: GoogleFonts.sawarabiMincho()),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context); // ダイアログを閉じる
-                  Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(
-                      builder: (context) => BottomBar(
-                        initialIndex: 0, // ホームタブを選択
+          barrierDismissible: false, // 追加: ダイアログ外タップを無効化
+          builder: (context) => WillPopScope( // 追加: バックボタンを無効化
+            onWillPop: () async => false,
+            child: AlertDialog(
+              title: Text('投函完了', style: GoogleFonts.sawarabiMincho()),
+              content: Text(responseData['message'] ?? '手紙が投函されました。', 
+                style: GoogleFonts.sawarabiMincho()),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context); // ダイアログを閉じる
+                    Navigator.of(context).pushAndRemoveUntil(
+                      MaterialPageRoute(
+                        builder: (context) => BottomBar(
+                          initialIndex: 0, // ホームタブを選択
+                        ),
                       ),
-                    ),
-                    (route) => false,
-                  );
-                },
-                child: Text('OK', style: GoogleFonts.sawarabiMincho()),
-              ),
-            ],
+                      (route) => false,
+                    );
+                  },
+                  child: Text('OK', style: GoogleFonts.sawarabiMincho()),
+                ),
+              ],
+            ),
           ),
         );
       } else {
@@ -64,33 +68,41 @@ class PostLetterScreen extends StatelessWidget {
         
         showDialog(
           context: context,
-          builder: (context) => AlertDialog(
-            title: Text('エラー', style: GoogleFonts.sawarabiMincho()),
-            content: Text('$errorMessage\n(エラーコード: ${response.statusCode})', 
-              style: GoogleFonts.sawarabiMincho()),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text('OK', style: GoogleFonts.sawarabiMincho()),
-              ),
-            ],
+          barrierDismissible: false, // 追加: ダイアログ外タップを無効化
+          builder: (context) => WillPopScope( // 追加: バックボタンを無効化
+            onWillPop: () async => false,
+            child: AlertDialog(
+              title: Text('エラー', style: GoogleFonts.sawarabiMincho()),
+              content: Text('$errorMessage\n(エラーコード: ${response.statusCode})', 
+                style: GoogleFonts.sawarabiMincho()),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text('OK', style: GoogleFonts.sawarabiMincho()),
+                ),
+              ],
+            ),
           ),
         );
       }
     } catch (e) {
       showDialog(
         context: context,
-        builder: (context) => AlertDialog(
-          title: Text('エラー', style: GoogleFonts.sawarabiMincho()),
-          content: Text('手紙の投函中にエラーが発生しました。', style: GoogleFonts.sawarabiMincho()),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context); // ダイアログを閉じる
-              },
-              child: Text('OK', style: GoogleFonts.sawarabiMincho()),
-            ),
-          ],
+        barrierDismissible: false, // 追加: ダイアログ外タップを無効化
+        builder: (context) => WillPopScope( // 追加: バックボタンを無効化
+          onWillPop: () async => false,
+          child: AlertDialog(
+            title: Text('エラー', style: GoogleFonts.sawarabiMincho()),
+            content: Text('手紙の投函中にエラーが発生しました。', style: GoogleFonts.sawarabiMincho()),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context); // ダイアログを閉じる
+                },
+                child: Text('OK', style: GoogleFonts.sawarabiMincho()),
+              ),
+            ],
+          ),
         ),
       );
     }

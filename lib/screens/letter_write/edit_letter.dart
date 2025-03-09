@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:just_audio/just_audio.dart';
 import '../../widgets/background_scaffold.dart';
 import 'check_letter.dart';
 
@@ -9,7 +10,7 @@ class EditLetterScreen extends StatefulWidget {
   final String recipientName;
 
   const EditLetterScreen({
-    super.key, 
+    super.key,
     required this.backgroundImage,
     required this.recipientId,
     required this.recipientName,
@@ -21,6 +22,32 @@ class EditLetterScreen extends StatefulWidget {
 
 class _EditLetterScreenState extends State<EditLetterScreen> {
   final TextEditingController _textController = TextEditingController();
+  final AudioPlayer _audioPlayer = AudioPlayer();
+  String _previousText = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _initAudio();
+  }
+
+  Future<void> _initAudio() async {
+    await _audioPlayer.setAsset('assets/audios/pen.mp3');
+    _textController.addListener(() {
+      if (_textController.text.length > _previousText.length) {
+        _audioPlayer.seek(Duration.zero);
+        _audioPlayer.play();
+      }
+      _previousText = _textController.text;
+    });
+  }
+
+  @override
+  void dispose() {
+    _audioPlayer.dispose();
+    _textController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {

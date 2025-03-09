@@ -59,6 +59,7 @@ def init_db():
             stmt = stmt.strip()
             if stmt:
                 DBsession.execute(text(stmt))
+                
         DBsession.commit()
         DBsession.close()
 

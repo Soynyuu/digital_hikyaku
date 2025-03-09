@@ -22,17 +22,17 @@ class _SelectLettersetScreenState extends State<SelectLettersetScreen> {
     {
       'image': 'assets/letter_set/letter_set_1.png',
       'title': 'チェックメモリー',
-      'description': '淡いブルーとオレンジのチェック柄が、どこか懐かしくも爽やかなレターセット。シンプルなデザインで、ビジネスシーンからカジュアルなメッセージまで幅広く使えます。',
+      'description': 'シンプルなデザインで、ビジネスシーンからカジュアルなメッセージまで幅広く使えます。',
     },
     {
       'image': 'assets/letter_set/letter_set_2.png',
       'title': 'ほのぼのフラワー',
-      'description': 'やさしいタッチで描かれた黄色い小花が、穏やかな気持ちを届けてくれるレターセット。シンプルながらも温かみのあるデザインで、大切な人への手紙にぴったりです。',
+      'description': 'シンプルながらも温かみのあるデザインで、大切な人への手紙にぴったりです。',
     },
     {
       'image': 'assets/letter_set/letter_set_3.png',
       'title': 'ベーシックレター',
-      'description': '落ち着いたチェック柄がアクセントのシンプルな手紙用紙。カジュアルなメッセージからフォーマルな手紙まで、どんなシーンにも馴染む万能デザインです。',
+      'description': 'カジュアルなメッセージからフォーマルな手紙まで、どんなシーンにも馴染む万能デザインです。',
     },
   ];
 
